@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Login — National ID System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/css/bootstrap.min.css" integrity="sha512-2bBQCjcnw658Lho4nlXJcc6WkV/UxpE/sAokbXPxQNGqmNdQrWqtw26Ns9kFF/yG792pKR1Sx8/Y1Lf1XN4GKA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --white:#ffffff; --yellow:#e8b840; --blue:#3a8fc7;
+      --blue-dark:#2e7db5; --blue-deep:#163d6b;
+      --ink:#1a2d40; --muted:#5a7a94; --bg:#e8f0f5;
+      --border:#c5d8e8; --field-bg:#e4eef5;
+    }
+    body { font-family:'DM Sans',sans-serif; background:var(--bg); min-height:100vh; display:flex; flex-direction:column; align-items:center; }
+
+    .hero {
+      width:100%;
+      background:linear-gradient(135deg,#0d2a4a 0%,#163d6b 100%);
+      padding:38px 28px 44px; position:relative; overflow:hidden;
+      display:flex; flex-direction:column; align-items:flex-start;
+    }
+    .hero-border { position:absolute; bottom:0; left:0; right:0; height:4px; background:var(--yellow); }
+    .hero-badge { position:relative; z-index:2; display:inline-flex; align-items:center; gap:7px; background:rgba(255,255,255,0.13); border:1px solid rgba(255,255,255,0.28); color:#fff; font-size:10px; font-weight:600; letter-spacing:2.5px; text-transform:uppercase; padding:6px 14px; border-radius:20px; margin-bottom:18px; }
+    .hero-badge-dot { width:6px; height:6px; background:var(--yellow); border-radius:50%; animation:pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(.65);} }
+    .hero h1 { position:relative; z-index:2; font-family:'Playfair Display', serif; font-weight:700; font-size:clamp(32px,6vw,48px); color:var(--white); line-height:1.05; letter-spacing:-0.5px; }
+    .hero h1 span { color:var(--yellow); display:block; }
+    .hero p { position:relative; z-index:2; margin-top:14px; color:rgba(255,255,255,0.72); font-size:13.5px; line-height:1.65; max-width:340px; }
+
+    .card {
+      width:100%; max-width:660px;
+      background:var(--white);
+      border-radius:0 0 20px 20px !important;
+      border:none !important;
+      box-shadow:0 8px 32px rgba(26,45,64,0.10);
+    }
+    .card-body { padding:28px 28px 36px; }
+    @media (min-width:680px) {
+      body{align-items:center;}
+      .hero{max-width:660px;border-radius:20px 20px 0 0;margin-top:32px;}
+    }
+
+    .admin-banner { display:flex; align-items:center; gap:11px; background:linear-gradient(135deg,#fff9e0,#fffcee); border:1.5px solid rgba(255,195,0,.45); border-radius:10px; padding:12px 15px; margin-bottom:20px; }
+    .admin-banner-icon { width:34px; height:34px; background:rgba(255,195,0,0.3); border:1.5px solid rgba(255,195,0,0.5); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; letter-spacing:1px; color:#7a5f00; flex-shrink:0; }
+    .admin-banner-text strong { display:block; font-size:12.5px; color:var(--ink); font-weight:700; }
+    .admin-banner-text span   { font-size:11px; color:#7a5f00; }
+
+    .alert { display:none !important; align-items:center; gap:8px; border-radius:9px; padding:10px 14px; font-size:13px; margin-bottom:14px; line-height:1.4; }
+    .alert.show { display:flex !important; }
+    .alert-error   { background:#fff1f1; border:1px solid #ffc0c0; color:#c0392b; }
+    .alert-success { background:#edfbf4; border:1px solid #9de4ba; color:#1a7a45; }
+
+    .form-heading { margin-bottom:20px; }
+    .form-heading h2 { font-family:'Playfair Display', serif; font-weight:700; font-size:22px; color:var(--ink); letter-spacing:-.3px; }
+    .form-heading p  { margin-top:4px; font-size:12.5px; color:var(--muted); line-height:1.5; }
+
+    .field { margin-bottom:14px; }
+    .field label { display:block; font-size:10.5px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--ink); margin-bottom:7px; }
+    .input-wrap { position:relative; }
+    .input-wrap input, .input-wrap select { width:100%; padding:12px 14px; border:1.5px solid var(--border); border-radius:10px; font-family:'DM Sans',sans-serif; font-size:14px; color:var(--ink); background:var(--field-bg); outline:none; transition:border-color .2s,box-shadow .2s,background .2s; }
+    .input-wrap input:focus, .input-wrap select:focus { border-color:var(--blue); background:var(--white); box-shadow:0 0 0 3px rgba(27,152,224,.11); }
+    .input-wrap select { appearance:none; cursor:pointer; }
+    .select-caret { position:absolute; right:14px; top:50%; transform:translateY(-50%); color:var(--muted); font-size:11px; pointer-events:none; }
+
+    .field-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; }
+    .checkbox-wrap { display:flex; align-items:center; gap:8px; cursor:pointer; }
+    .checkbox-wrap input[type="checkbox"] { width:15px; height:15px; accent-color:var(--blue); cursor:pointer; }
+    .checkbox-wrap span { font-size:13px; color:var(--muted); }
+    .link { font-size:13px; color:var(--blue); text-decoration:none; font-weight:600; }
+    .link:hover { text-decoration:underline; }
+
+    .btn-cta {
+      width:100%; padding:13.5px;
+      border:none; border-radius:11px;
+      background:linear-gradient(135deg,var(--blue) 0%,var(--blue-dark) 100%);
+      color:var(--white);
+      font-family:'DM Sans',sans-serif;
+      font-size:15px; font-weight:700; letter-spacing:.3px;
+      cursor:pointer;
+      transition:transform .15s,box-shadow .15s;
+      box-shadow:0 6px 20px rgba(58,143,199,.36);
+      position:relative; overflow:hidden;
+    }
+    .btn-cta::after { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(255,195,0,.18) 0%,transparent 60%); opacity:0; transition:opacity .2s; }
+    .btn-cta:hover { transform:translateY(-2px); box-shadow:0 10px 26px rgba(58,143,199,.44); color:var(--white); }
+    .btn-cta:hover::after { opacity:1; }
+    .btn-cta:active { transform:translateY(0); }
+
+
+
+    .page-footer { font-size:11px; color:#5a7a94; text-align:center; padding:20px 0 28px; letter-spacing:.5px; }
+
+    @media (max-width:680px) { .hero{border-radius:0;margin-top:0;} .card{border-radius:0 !important;} }
+  </style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-badge"><span class="hero-badge-dot"></span> San Mateo, Rizal</div>
+  <h1><span>Admin Portal</span></h1>
+  <p>Restricted access — authorized LGU personnel only.</p>
+  <div class="hero-border"></div>
+</div>
+
+<div class="card">
+  <div class="card-body">
+
+    <div class="admin-banner">
+      <div class="admin-banner-icon">ADM</div>
+      <div class="admin-banner-text">
+        <strong>Administrator Access</strong>
+        <span>Restricted — authorized personnel only</span>
+      </div>
+    </div>
+
+    <div class="form-heading">
+      <h2>Admin Sign In</h2>
+      <p>Provide your credentials and select your access role.</p>
+    </div>
+
+    <div class="alert alert-error" id="a-al" role="alert"></div>
+
+    <div class="field">
+      <label>Admin ID / Username</label>
+      <div class="input-wrap"><input type="text" id="al-u" placeholder="Enter admin ID" autocomplete="username"/></div>
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <div class="input-wrap"><input type="password" id="al-p" placeholder="Enter admin password" autocomplete="current-password"/></div>
+    </div>
+    <div class="field-row">
+      <label class="checkbox-wrap"><input type="checkbox"/> <span>Remember this device</span></label>
+      <a href="#" class="link"
+         data-bs-toggle="tooltip"
+         data-bs-placement="top"
+         title="Contact your system administrator to reset admin access.">Reset access</a>
+    </div>
+
+    <button class="btn btn-cta" onclick="doLogin()">Access Admin Panel</button>
+
+
+
+  </div>
+</div>
+
+<p class="page-footer">© 2025 San Mateo LGU · National ID System · All rights reserved</p>
+
+<script>
+  const LS = {
+    get(k)    { try { return JSON.parse(localStorage.getItem(k)); } catch(e) { return null; } },
+    set(k, v) { localStorage.setItem(k, JSON.stringify(v)); },
+    admins()  { return LS.get('id_admins') || []; },
+    subs()    { return LS.get('id_submissions') || []; },
+  };
+
+  /* Seed a default admin account */
+  (function seedAdmin() {
+    const admins = LS.admins();
+    if (!admins.find(a => a.username === 'admin')) {
+      admins.push({ username:'admin', password:'admin123', firstName:'System', lastName:'Admin', role:'superadmin', dept:'it', email:'admin@sanmateo.gov.ph' });
+      LS.set('id_admins', admins);
+    }
+  })();
+
+  /* Redirect if already logged in as admin */
+  (function checkSession() {
+    const s = LS.get('id_session');
+    if (s && s.type === 'admin') { location.href = 'id-admin.html'; }
+  })();
+
+  function showAlert(id, msg, type) {
+    $('#' + id)
+      .text(msg)
+      .attr('class', 'alert show ' + (type === 'success' ? 'alert-success' : 'alert-error'));
+  }
+
+  function doLogin() {
+    const u = $('#al-u').val().trim();
+    const p = $('#al-p').val().trim();
+    if (!u || !p) { showAlert('a-al', 'Please fill in all fields.'); return; }
+    const admin = LS.admins().find(x => x.username === u && x.password === p);
+    if (!admin) { showAlert('a-al', 'Incorrect admin ID or password.'); return; }
+    LS.set('id_session', { type:'admin', username:u, name: admin.firstName + ' ' + admin.lastName, role: admin.role });
+    location.href = 'id-admin.html';
+  }
+
+  $(document).on('keydown', function(e) {
+    if (e.key === 'Enter') doLogin();
+  });
+
+  $(document).ready(function() {
+    $('[data-bs-toggle="tooltip"]').each(function() {
+      new bootstrap.Tooltip(this);
+    });
+  });
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/js/bootstrap.min.js" integrity="sha512-nKXmKvJyiGQy343jatQlzDprflyB5c+tKCzGP3Uq67v+lmzfnZUi/ZT+fc6ITZfSC5HhaBKUIvr/nTLCV+7F+Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/js/fontawesome.min.js" integrity="sha512-obFNtQ1JKCrxPBPLmYDUevlriATl5EhvwU3CFtdW/HKOkeAe0bbsyZfHO44/f1QyndrZJ464TQvrRP9ZjyXSSA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</body>
+</html>

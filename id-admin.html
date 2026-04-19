@@ -1,0 +1,2267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ID Registry Dashboard</title>
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet"/>
+  <!-- DataTables Bootstrap5 -->
+  <link href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css" rel="stylesheet"/>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+
+  <style>
+    :root {
+      --sidebar-w: 230px;
+      --accent: #2563eb;
+      --accent-soft: #eff6ff;
+      --success: #16a34a;
+      --warning: #d97706;
+      --danger: #dc2626;
+      --surface: #ffffff;
+      --bg: #f1f5f9;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --muted: #64748b;
+      --mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: #0f172a;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; left: 0;
+      z-index: 1000;
+    }
+
+    .sidebar-brand {
+      padding: 1.5rem 1.25rem 1rem;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .sidebar-brand .brand-icon {
+      width: 36px; height: 36px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+
+    .sidebar-brand h2 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+      margin: 0;
+      letter-spacing: 0.01em;
+    }
+    .sidebar-brand small {
+      font-size: 11px;
+      color: rgba(255,255,255,0.4);
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      padding: 1rem 0;
+    }
+
+    .nav-section {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: rgba(255,255,255,0.3);
+      padding: 0.75rem 1.25rem 0.25rem;
+      text-transform: uppercase;
+    }
+
+    .sidebar-nav a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 1.25rem;
+      font-size: 13px;
+      color: rgba(255,255,255,0.6);
+      text-decoration: none;
+      border-radius: 0;
+      transition: all 0.15s;
+    }
+
+    .sidebar-nav a:hover,
+    .sidebar-nav a.active {
+      color: #fff;
+      background: rgba(255,255,255,0.07);
+    }
+
+    .sidebar-nav a.active {
+      border-left: 3px solid var(--accent);
+    }
+
+    .sidebar-nav a i { width: 16px; font-size: 13px; }
+
+    .sidebar-footer {
+      padding: 1rem 1.25rem;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      font-size: 12px;
+      color: rgba(255,255,255,0.35);
+    }
+
+    /* ── Main ── */
+    .main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0.9rem 1.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .topbar h1 {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .sync-badge {
+      font-size: 11px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .sync-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #22c55e;
+      display: inline-block;
+    }
+
+    /* ── Content ── */
+    .content { padding: 1.75rem; }
+
+    /* ── Metric Cards ── */
+    .metric-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      transition: box-shadow 0.2s;
+    }
+
+    .metric-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+
+    .metric-icon {
+      width: 42px; height: 42px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+    }
+
+    .metric-label {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .metric-value {
+      font-size: 26px;
+      font-weight: 600;
+      line-height: 1;
+    }
+
+    .metric-sub {
+      font-size: 11px;
+      margin-top: 5px;
+    }
+
+    /* ── Card ── */
+    .dash-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .dash-card .card-head {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .dash-card .card-head h6 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin: 0;
+    }
+
+    .card-body-pad { padding: 1.25rem; }
+
+    /* ── Badges ── */
+    .status-badge {
+      font-size: 11px;
+      font-weight: 500;
+      padding: 3px 10px;
+      border-radius: 99px;
+      display: inline-block;
+    }
+
+    .badge-active   { background: #dcfce7; color: #15803d; }
+    .badge-pending  { background: #fef3c7; color: #92400e; }
+    .badge-revoked  { background: #fee2e2; color: #991b1b; }
+    .badge-expired  { background: #f1f5f9; color: #475569; }
+    .badge-rejected { background: #fce7f3; color: #9d174d; }
+
+    /* ── Table ── */
+    #idTable_wrapper .dataTables_filter input {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 5px 10px;
+      font-size: 13px;
+      outline: none;
+    }
+
+    #idTable_wrapper .dataTables_length select {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 4px 8px;
+      font-size: 13px;
+    }
+
+    #renewalsTable_wrapper .dataTables_filter input {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 5px 10px;
+      font-size: 13px;
+      outline: none;
+    }
+
+    #renewalsTable_wrapper .dataTables_length select {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 4px 8px;
+      font-size: 13px;
+    }
+
+    table.dataTable tbody tr:hover td { background: #f8fafc !important; cursor: pointer; }
+
+    .id-code {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .avatar-circle {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    /* ── Activity ── */
+    .activity-item {
+      display: flex;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      align-items: flex-start;
+    }
+
+    .activity-item:last-child { border-bottom: none; }
+
+    .act-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      margin-top: 5px;
+      flex-shrink: 0;
+    }
+
+    .act-time { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+    /* ── Mini Calendar ── */
+    .cal-nav { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+    .cal-nav button { background:none; border:none; cursor:pointer; color:var(--muted); padding:2px 6px; border-radius:6px; font-size:13px; }
+    .cal-nav button:hover { background:var(--bg); }
+    .cal-month-label { font-size:13px; font-weight:600; }
+    .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; text-align:center; }
+    .cal-dow { font-size:10px; font-weight:600; color:var(--muted); padding:3px 0 5px; }
+    .cal-day { font-size:11px; padding:5px 2px; border-radius:6px; line-height:1.5; }
+    .cal-day.other-month { color:#cbd5e1; }
+    .cal-day.today { background:var(--accent); color:#fff; font-weight:600; }
+
+    /* ── Detail panel ── */
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+
+    .detail-row:last-child { border-bottom: none; }
+    .detail-key { color: var(--muted); }
+    .detail-val { font-weight: 500; }
+
+    /* ── Modal ── */
+    .modal-content { border-radius: 14px; border: 1px solid var(--border); }
+    .modal-header { border-bottom: 1px solid var(--border); }
+    .modal-footer { border-top: 1px solid var(--border); }
+
+    .form-control:focus, .form-select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); transition: transform 0.3s; }
+      .sidebar.open { transform: translateX(0); }
+      .main { margin-left: 0; }
+    }
+
+    /* ── Animations ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .metric-card, .dash-card { animation: fadeUp 0.35s ease both; }
+    .metric-card:nth-child(1) { animation-delay: 0.05s; }
+    .metric-card:nth-child(2) { animation-delay: 0.10s; }
+    .metric-card:nth-child(3) { animation-delay: 0.15s; }
+    .metric-card:nth-child(4) { animation-delay: 0.20s; }
+
+    /* ── Pending Applications ── */
+    .info-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: #f1f5f9; border: 1px solid var(--border);
+      border-radius: 20px; padding: 3px 10px;
+      font-size: 11px; color: var(--text); white-space: nowrap;
+    }
+    .info-pill i { color: var(--muted); }
+    .addr-row { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    .attach-chip {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: #f8fafc; border: 1px solid var(--border);
+      border-radius: 8px; padding: 6px 10px;
+      cursor: pointer; transition: background 0.15s, border-color 0.15s;
+      min-width: 0;
+    }
+    .attach-chip:hover { background: var(--accent-soft); border-color: var(--accent); }
+    .metric-card.clickable { cursor: pointer; }
+    .metric-card.clickable:hover { box-shadow: 0 4px 20px rgba(37,99,235,0.15); border-color: var(--accent); }
+
+    /* Photo hover overlay */
+    [onclick^="viewPhoto"]:hover .photo-hover-overlay { opacity: 1 !important; }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════ SIDEBAR ══════════════ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon"><i class="fa-solid fa-id-badge"></i></div>
+    <h2>ID Registry</h2>
+    <small>Management System</small>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Main</div>
+    <a href="#" class="active" data-view="dashboard"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+    <a href="#" data-view="all-ids"><i class="fa-solid fa-id-card"></i> All IDs <span id="pending-nav-badge" class="badge bg-warning text-dark ms-auto" style="font-size:9px;display:none;"></span></a>
+    <a href="#" data-view="pending-applications"><i class="fa-solid fa-inbox"></i> Applications <span id="app-nav-badge" class="badge bg-danger ms-auto" style="font-size:9px;display:none;"></span></a>
+    <a href="#" data-view="activity-log"><i class="fa-solid fa-clock-rotate-left"></i> Activity Log</a>
+
+    <div class="nav-section">Manage</div>
+    <a href="#" data-view="renewals"><i class="fa-solid fa-rotate"></i> Renewals <span id="renewals-nav-badge" class="badge bg-info ms-auto" style="font-size:9px;display:none;"></span></a>
+    <a href="#" data-view="revocations"><i class="fa-solid fa-ban"></i> Revocations</a>
+
+    <div class="nav-section">System</div>
+    <a href="#" data-view="access-control"><i class="fa-solid fa-shield-halved"></i> Access Control</a>
+    <a href="#" data-view="settings"><i class="fa-solid fa-gear"></i> Settings</a>
+    <a href="#" data-view="reports"><i class="fa-solid fa-file-export"></i> Reports</a>
+  </nav>
+  <div class="sidebar-footer">
+    <i class="fa-solid fa-circle-user"></i> <span id="sidebarAdminName">Admin User</span> &nbsp;·&nbsp; v2.4.1
+  </div>
+</aside>
+
+<!-- ══════════════ MAIN ══════════════ -->
+<div class="main">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="d-flex align-items-center gap-3">
+      <button class="btn btn-sm btn-light d-md-none" onclick="$('#sidebar').toggleClass('open')">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+      <h1 class="mb-0">Dashboard</h1>
+    </div>
+    <div class="topbar-right">
+      <!-- Admin dropdown -->
+      <div class="dropdown">
+        <a href="#" class="d-flex align-items-center gap-2 text-decoration-none dropdown-toggle"
+           id="adminDropdown" data-bs-toggle="dropdown" aria-expanded="false"
+           style="color:var(--text);">
+          <div class="avatar-circle" id="adminAvatar" style="background:#eff6ff;color:#1d4ed8;">AD</div>
+          <span id="adminNameLabel" style="font-size:12px;font-weight:500;color:var(--muted);"></span>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="adminDropdown"
+            style="min-width:180px;border:1px solid var(--border);border-radius:10px;font-size:13px;">
+          <li>
+            <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="#"
+               onclick="showView('settings');return false;">
+              <i class="fa-solid fa-gear fa-sm" style="color:var(--muted);width:14px;"></i> Settings
+            </a>
+          </li>
+          <li><hr class="dropdown-divider my-1"></li>
+          <li>
+            <a class="dropdown-item d-flex align-items-center gap-2 py-2 text-danger" href="#"
+               onclick="Swal.fire({ title: 'Logout?', text: 'Are you sure you want to sign out?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonColor: '#64748b', confirmButtonText: 'Yes, logout', cancelButtonText: 'Cancel' }).then(r => { if(r.isConfirmed) { localStorage.removeItem('id_session'); location.href = 'admin-login.html'; } });return false;">
+              <i class="fa-solid fa-right-from-bracket fa-sm" style="width:14px;"></i> Logout
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+
+    <!-- Metric Cards -->
+    <div class="row g-3 mb-4" id="metrics-row">
+      <!-- Pending applications alert banner -->
+      <div class="col-12" id="pending-alert-row" style="display:none;">
+        <div style="background:#fef3c7;border:1.5px solid #f59e0b;border-radius:10px;padding:12px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+          <div style="font-size:13px;color:#92400e;font-weight:500;">
+            <i class="fa fa-inbox me-2" style="color:#d97706;"></i>
+            <span id="pending-alert-text">You have pending applications awaiting review.</span>
+          </div>
+          <button class="btn btn-warning btn-sm fw-600" onclick="showView('pending-applications')">
+            <i class="fa fa-eye me-1"></i>Review Now
+          </button>
+        </div>
+      </div>
+      <div class="col-6 col-md-2">
+        <div class="metric-card">
+          <div>
+            <div class="metric-label">Total IDs</div>
+            <div class="metric-value" id="m-total">—</div>
+            <div class="metric-sub text-success"><i class="fa-solid fa-arrow-trend-up fa-xs"></i> +12 this week</div>
+          </div>
+          <div class="metric-icon" style="background:#eff6ff;color:#2563eb;">
+            <i class="fa-solid fa-id-card-clip"></i>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-2">
+        <div class="metric-card">
+          <div>
+            <div class="metric-label">Active</div>
+            <div class="metric-value text-success" id="m-active">—</div>
+            <div class="metric-sub text-muted">valid credentials</div>
+          </div>
+          <div class="metric-icon" style="background:#dcfce7;color:#16a34a;">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-2">
+        <div class="metric-card clickable" onclick="showView('pending-applications')" title="View pending applications">
+          <div>
+            <div class="metric-label">Pending</div>
+            <div class="metric-value" style="color:#d97706" id="m-pending">—</div>
+            <div class="metric-sub text-muted">click to review ↗</div>
+          </div>
+          <div class="metric-icon" style="background:#fef3c7;color:#d97706;">
+            <i class="fa-solid fa-hourglass-half"></i>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-2">
+        <div class="metric-card">
+          <div>
+            <div class="metric-label">Approved</div>
+            <div class="metric-value" style="color:#0369a1" id="m-approved">—</div>
+            <div class="metric-sub text-muted">total approved IDs</div>
+          </div>
+          <div class="metric-icon" style="background:#e0f2fe;color:#0369a1;">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-2">
+        <div class="metric-card clickable" onclick="showView('revocations')" title="View rejected applications">
+          <div>
+            <div class="metric-label">Rejected</div>
+            <div class="metric-value" style="color:#9d174d" id="m-rejected">—</div>
+            <div class="metric-sub text-muted">click to review ↗</div>
+          </div>
+          <div class="metric-icon" style="background:#fce7f3;color:#9d174d;">
+            <i class="fa-solid fa-circle-xmark"></i>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-2">
+        <div class="metric-card clickable" onclick="showView('revocations')" title="View revoked IDs">
+          <div>
+            <div class="metric-label">Revoked</div>
+            <div class="metric-value text-danger" id="m-revoked">—</div>
+            <div class="metric-sub text-muted">click to review ↗</div>
+          </div>
+          <div class="metric-icon" style="background:#fee2e2;color:#dc2626;">
+            <i class="fa-solid fa-ban"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row: Chart + Dept + Activity -->
+    <div class="row g-3 mb-4">
+
+      <!-- Donut Chart -->
+      <div class="col-md-4">
+        <div class="dash-card h-100">
+          <div class="card-head">
+            <h6><i class="fa-solid fa-chart-pie me-1"></i> Status Breakdown</h6>
+          </div>
+          <div class="card-body-pad">
+            <div id="donutChart"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Monthly Issued Chart -->
+      <div class="col-md-4">
+        <div class="dash-card h-100">
+          <div class="card-head">
+            <h6><i class="fa-solid fa-chart-column me-1"></i> Monthly Issuances</h6>
+          </div>
+          <div class="card-body-pad">
+            <div id="barChart"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Activity -->
+      <div class="col-md-4">
+        <div class="dash-card h-100">
+          <div class="card-head">
+            <h6><i class="fa-solid fa-bolt me-1"></i> Recent Activity</h6>
+          </div>
+          <div class="card-body-pad" id="activity-feed"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row: Table + Detail -->
+    <div class="row g-3">
+
+      <!-- DataTable -->
+      <div class="col-lg-8">
+        <div class="dash-card">
+          <div class="card-head">
+            <h6><i class="fa-solid fa-table me-1"></i> ID Records</h6>
+            <div class="d-flex gap-2">
+              <select class="form-select form-select-sm" id="statusFilter" style="width:130px;font-size:12px;">
+                <option value="">All Status</option>
+                <option value="Active">Active</option>
+                <option value="Pending">Pending</option>
+                <option value="Rejected">Rejected</option>
+                <option value="Revoked">Revoked</option>
+                <option value="Expired">Expired</option>
+              </select>
+            </div>
+          </div>
+          <div class="card-body-pad">
+            <div class="table-responsive">
+              <table id="idTable" class="table table-sm table-hover w-100">
+                <thead>
+                  <tr>
+                    <th>Holder</th>
+                    <th>ID No.</th>
+                    <th>Type</th>
+                    <th>Department</th>
+                    <th>Status</th>
+                    <th>Expires</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detail + Dept bars -->
+      <div class="col-lg-4 d-flex flex-column gap-3">
+
+        <!-- Detail Panel -->
+        <div class="dash-card">
+          <div class="card-head">
+            <h6><i class="fa-solid fa-address-card me-1"></i> ID Details</h6>
+          </div>
+          <div class="card-body-pad" id="detailPanel">
+            <div class="text-center py-4 text-muted">
+              <i class="fa-regular fa-id-card fa-2x mb-2 d-block"></i>
+              <small>Select a record to view details</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Calendar -->
+        <div class="dash-card">
+          <div class="card-head">
+            <h6><i class="fa-regular fa-calendar me-1"></i> Calendar</h6>
+          </div>
+          <div class="card-body-pad">
+            <div class="cal-nav">
+              <button id="calPrev"><i class="fa fa-chevron-left fa-xs"></i></button>
+              <span class="cal-month-label" id="calMonthLabel"></span>
+              <button id="calNext"><i class="fa fa-chevron-right fa-xs"></i></button>
+            </div>
+            <div class="cal-grid" id="calGrid"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /content -->
+
+  <!-- ══════════════ ALTERNATE VIEWS ══════════════ -->
+  <!-- All IDs View -->
+  <div id="view-all-ids" class="content" style="display:none;">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <h5 class="fw-600 mb-0">All ID Records</h5>
+      <div class="d-flex gap-2">
+        <select class="form-select form-select-sm" id="allIds-statusFilter" style="width:140px;font-size:12px;">
+          <option value="">All Status</option>
+          <option value="Active">Active</option>
+          <option value="Pending">Pending</option>
+          <option value="Rejected">Rejected</option>
+          <option value="Revoked">Revoked</option>
+          <option value="Expired">Expired</option>
+        </select>
+        <select class="form-select form-select-sm" id="allIds-deptFilter" style="width:140px;font-size:12px;">
+          <option value="">All Departments</option>
+          <option>Engineering</option><option>Operations</option>
+          <option>HR</option><option>Finance</option><option>Security</option><option>Resident</option>
+        </select>
+        <button class="btn btn-primary btn-sm px-3" data-bs-toggle="modal" data-bs-target="#issueModal">
+          <i class="fa-solid fa-plus me-1"></i> Issue New
+        </button>
+      </div>
+    </div>
+    <div class="dash-card">
+      <div class="card-body-pad">
+        <div class="table-responsive">
+          <table id="allIdsTable" class="table table-sm table-hover w-100">
+            <thead>
+              <tr>
+                <th>Holder</th><th>ID No.</th><th>Type</th>
+                <th>Department</th><th>Status</th><th>Issued</th><th>Expires</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Activity Log View -->
+  <div id="view-activity-log" class="content" style="display:none;">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <h5 class="fw-600 mb-0">Activity Log</h5>
+      <button class="btn btn-outline-danger btn-sm" onclick="clearActivityLog()"><i class="fa-solid fa-trash me-1"></i> Clear Log</button>
+    </div>
+    <div class="dash-card">
+      <div class="card-body-pad" id="activity-log-full">
+        <div class="text-center py-5 text-muted"><i class="fa-solid fa-bolt fa-2x mb-2 d-block"></i><small>No activity recorded yet.</small></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Renewals View -->
+  <div id="view-renewals" class="content" style="display:none;">
+    <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+      <div>
+        <h5 class="fw-600 mb-0">Renewal Requests</h5>
+        <small class="text-muted">Applicants who have requested ID renewal</small>
+      </div>
+      <div class="d-flex gap-2 align-items-center">
+        <span class="badge bg-info text-white" id="renewals-count-badge">0 requests</span>
+        <button class="btn btn-outline-secondary btn-sm" onclick="renderRenewals()"><i class="fa-solid fa-rotate me-1"></i>Refresh</button>
+      </div>
+    </div>
+    <div class="dash-card">
+      <div class="card-head">
+        <h6><i class="fa-solid fa-rotate me-1 text-primary"></i> Renewal Applicants</h6>
+      </div>
+      <div class="card-body-pad">
+        <div class="table-responsive">
+          <table class="table table-hover w-100" id="renewalsTable">
+            <thead class="table-light">
+              <tr>
+                <th>Applicant</th>
+                <th>ID Number</th>
+                <th>Type</th>
+                <th>Requested On</th>
+                <th>Expiry Date</th>
+                <th>Days Left</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="renewals-table-body"></tbody>
+          </table>
+        </div>
+        <div id="renewals-empty" class="text-center py-5 text-muted" style="display:none;">
+          <i class="fa-solid fa-rotate fa-2x mb-2 d-block"></i>
+          <small>No renewal requests at this time.</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Revocations View -->
+  <div id="view-revocations" class="content" style="display:none;">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <h5 class="fw-600 mb-0">Revocations &amp; Rejections</h5>
+    </div>
+    <div class="dash-card">
+      <div class="card-body-pad" id="revocations-list">
+        <div class="text-center py-5 text-muted"><i class="fa-solid fa-ban fa-2x mb-2 d-block"></i><small>No revoked or rejected IDs.</small></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Access Control View -->
+  <div id="view-access-control" class="content" style="display:none;">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <h5 class="fw-600 mb-0">Access Control</h5>
+    </div>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <div class="dash-card">
+          <div class="card-head"><h6><i class="fa-solid fa-shield-halved me-1"></i> Access Levels</h6></div>
+          <div class="card-body-pad" id="access-levels-list"></div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="dash-card">
+          <div class="card-head"><h6><i class="fa-solid fa-users me-1"></i> Admin Sessions</h6></div>
+          <div class="card-body-pad">
+            <div id="admin-session-info"></div>
+            <button class="btn btn-outline-danger btn-sm mt-3" onclick="Swal.fire({title:'Clear all sessions?',text:'This will log out all admin users.',icon:'warning',showCancelButton:true,confirmButtonColor:'#dc2626',confirmButtonText:'Clear'}).then(r=>{if(r.isConfirmed){localStorage.removeItem('id_session');Swal.fire({icon:'success',title:'Sessions cleared',timer:1500,showConfirmButton:false});}})">
+              <i class="fa-solid fa-trash me-1"></i> Clear Sessions
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings View -->
+  <div id="view-settings" class="content" style="display:none;">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <h5 class="fw-600 mb-0">Settings</h5>
+    </div>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <div class="dash-card">
+          <div class="card-head"><h6><i class="fa-solid fa-user-shield me-1"></i> Admin Profile</h6></div>
+          <div class="card-body-pad">
+            <div class="mb-3">
+              <label class="form-label small fw-500">Display Name</label>
+              <input type="text" class="form-control form-control-sm" id="settings-admin-name" placeholder="Administrator"/>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-500">Username</label>
+              <input type="text" class="form-control form-control-sm" id="settings-admin-username" placeholder="admin"/>
+            </div>
+            <button class="btn btn-primary btn-sm px-4" onclick="saveAdminSettings()"><i class="fa-solid fa-floppy-disk me-1"></i> Save Profile</button>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="dash-card">
+          <div class="card-head"><h6><i class="fa-solid fa-database me-1"></i> Data Management</h6></div>
+          <div class="card-body-pad">
+            <p class="text-muted" style="font-size:13px;">Manage stored ID records and application data.</p>
+            <div class="d-flex flex-column gap-2">
+              <button class="btn btn-outline-secondary btn-sm" onclick="exportAllData()"><i class="fa-solid fa-file-export me-1"></i> Export All Data (JSON)</button>
+              <button class="btn btn-outline-danger btn-sm" onclick="clearManualRecords()"><i class="fa-solid fa-trash me-1"></i> Clear Manual Records</button>
+              <button class="btn btn-outline-danger btn-sm" onclick="clearSubmissions()"><i class="fa-solid fa-trash me-1"></i> Clear Submissions</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reports View -->
+  <div id="view-reports" class="content" style="display:none;">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <h5 class="fw-600 mb-0">Reports</h5>
+      <button class="btn btn-primary btn-sm px-3" onclick="exportCSV()"><i class="fa-solid fa-file-csv me-1"></i> Export CSV</button>
+    </div>
+    <div class="row g-3 mb-3" id="report-stats-row"></div>
+    <div class="dash-card">
+      <div class="card-head"><h6><i class="fa-solid fa-table me-1"></i> Full Registry Export Preview</h6></div>
+      <div class="card-body-pad">
+        <div class="table-responsive">
+          <table class="table table-sm table-bordered w-100" id="reportTable">
+            <thead class="table-light">
+              <tr><th>ID No.</th><th>Name</th><th>Type</th><th>Dept</th><th>Status</th><th>Issued</th><th>Expires</th></tr>
+            </thead>
+            <tbody id="reportTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pending Applications View -->
+  <div id="view-pending-applications" class="content" style="display:none;">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <h5 class="fw-600 mb-0">Pending Applications</h5>
+      <div class="d-flex gap-2 align-items-center">
+        <span class="badge bg-warning text-dark" id="pending-apps-count-badge">0 pending</span>
+        <button class="btn btn-outline-secondary btn-sm" onclick="records=loadAllRecords();renderPendingApplications();"><i class="fa-solid fa-rotate me-1"></i>Refresh</button>
+      </div>
+    </div>
+    <div id="pending-apps-container">
+      <div class="text-center py-5 text-muted"><i class="fa-solid fa-inbox fa-2x mb-2 d-block"></i><small>No pending applications.</small></div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- ══════════════ ATTACHMENT VIEWER MODAL ══════════════ -->
+<div class="modal fade" id="attachmentViewerModal" tabindex="-1" aria-labelledby="attachmentViewerLabel">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header py-2 px-3">
+        <div class="d-flex align-items-center gap-2">
+          <i class="fa-solid fa-paperclip text-primary" id="attachViewerIcon"></i>
+          <h6 class="modal-title mb-0 fw-600" id="attachmentViewerLabel">Attachment</h6>
+          <span class="text-muted" style="font-size:11px;" id="attachViewerMeta"></span>
+        </div>
+        <div class="d-flex align-items-center gap-2 ms-auto">
+          <button class="btn btn-sm btn-outline-primary" id="attachViewerDownloadBtn" title="Download">
+            <i class="fa-solid fa-download fa-xs me-1"></i>Download
+          </button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+      </div>
+      <div class="modal-body p-0" id="attachViewerBody" style="min-height:300px;background:#0f172a;display:flex;align-items:center;justify-content:center;border-radius:0 0 14px 14px;overflow:hidden;">
+        <!-- content injected by JS -->
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- ══════════════ SCRIPTS ══════════════ -->
+<!-- jQuery -->
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<!-- Bootstrap 5 JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- DataTables -->
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- ApexCharts -->
+<script src="https://cdn.jsdelivr.net/npm/apexcharts@3.49.0/dist/apexcharts.min.js"></script>
+
+<script>
+// ── LOCALSTORAGE HELPERS ──────────────────────────────────────────
+const LS = {
+  get: k => { try { return JSON.parse(localStorage.getItem(k)); } catch(e) { return null; } },
+  set: (k, v) => localStorage.setItem(k, JSON.stringify(v))
+};
+
+// ── CONSTANTS ─────────────────────────────────────────────────────
+const COLORS_MAP = {
+  Engineering: '#2563eb', Operations: '#0891b2',
+  HR: '#7c3aed', Finance: '#d97706', Security: '#dc2626', Resident: '#059669'
+};
+const AVATAR_COLORS = [
+  ['#eff6ff','#1d4ed8'], ['#f5f3ff','#6d28d9'],
+  ['#ecfdf5','#065f46'], ['#fef3c7','#92400e'], ['#fef2f2','#991b1b']
+];
+
+// ── UTILS ─────────────────────────────────────────────────────────
+function genID()      { return 'ID-' + Math.random().toString(36).substr(2,6).toUpperCase(); }
+function initials(n)  { return (n||'??').split(' ').map(x=>x[0]).join('').substr(0,2).toUpperCase(); }
+function offsetDate(d){ const x=new Date(); x.setDate(x.getDate()+d); return x.toISOString().split('T')[0]; }
+
+// ── SUBMISSION → RECORD CONVERTER ────────────────────────────────
+function subToRecord(sub) {
+  const statusMap = { pending: 'Pending', approved: 'Active', rejected: 'Rejected', revoked: 'Revoked' };
+  let expires = offsetDate(365);
+  if (sub.approvedAt) {
+    const base = new Date();
+    base.setFullYear(base.getFullYear() + 1);
+    expires = base.toISOString().split('T')[0];
+  }
+  const d = sub.data || {};
+  const name = d.fullName || [d.firstName, d.lastName].filter(Boolean).join(' ') || 'Unknown';
+  return {
+    _fromSub: true,
+    _subUsername: sub.username,
+    id: sub.id,
+    name,
+    dept:  'Resident',
+    type:  'Municipal ID',
+    level: 'Standard',
+    status: statusMap[sub.status] || 'Pending',
+    issued:  sub.submittedAt || new Date().toLocaleDateString('en-PH'),
+    expires,
+    note: '',
+    personalData: d,
+    photo: sub.photo || null,
+    attachments: (sub.attachments || []).map((a, i) => ({
+      ...a, slot: ['dl','pp','eid','bc'][i] || ('doc' + (i + 1))
+    })),
+    rejectedReason: sub.rejectedReason || null,
+    revokedReason: sub.revokedReason || null
+  };
+}
+
+// ── SYNC STATUS BACK TO LOCALSTORAGE ─────────────────────────────
+function syncSubStatus(record, appStatus, reason) {
+  if (!record._fromSub) return;
+  const subs = LS.get('id_submissions') || [];
+  const sub  = subs.find(s => s.username === record._subUsername);
+  if (!sub) return;
+  sub.status = appStatus; // 'pending' | 'approved' | 'rejected' | 'revoked'
+  if (appStatus === 'approved') sub.approvedAt = new Date().toLocaleString('en-PH');
+  if (reason !== undefined) sub.revokedReason = reason;
+  LS.set('id_submissions', subs);
+}
+
+// ── DEMO RECORDS (empty — all data comes from submissions & manual) ─
+const DEMO_RECORDS = [];
+
+// ── LOAD ALL RECORDS (submissions + manual + demo) ────────────────
+function loadAllRecords() {
+  const subs   = (LS.get('id_submissions')    || []).map(subToRecord);
+  const manual = (LS.get('id_manual_records') || []).map(r => ({...r, _fromSub: false}));
+  return [...subs, ...manual, ...DEMO_RECORDS];
+}
+
+let records = loadAllRecords();
+
+let activity = [];
+
+// ── HELPERS ───────────────────────────────────────────────────────
+function statusBadge(s) {
+  const map = {Active:'badge-active',Pending:'badge-pending',Revoked:'badge-revoked',Expired:'badge-expired',Rejected:'badge-rejected'};
+  return `<span class="status-badge ${map[s]||'badge-expired'}">${s}</span>`;
+}
+
+function avatarColor(name) {
+  let h = 0; for (let c of (name||'?')) h = (h*31+c.charCodeAt(0))%AVATAR_COLORS.length;
+  return AVATAR_COLORS[h];
+}
+
+function avatarHTML(name, size=30) {
+  const [bg,fg] = avatarColor(name||'?');
+  return `<div class="avatar-circle" style="background:${bg};color:${fg};width:${size}px;height:${size}px;font-size:${Math.floor(size*0.36)}px;">${initials(name||'?')}</div>`;
+}
+
+// ── METRICS ───────────────────────────────────────────────────────
+function updateMetrics() {
+  const now = new Date();
+  $('#m-total').text(records.length);
+  $('#m-active').text(records.filter(r=>r.status==='Active').length);
+  const pendingCount = records.filter(r=>r.status==='Pending').length;
+  $('#m-pending').text(pendingCount);
+  $('#m-approved').text(records.filter(r=>r.status==='Active').length);
+  $('#m-rejected').text(records.filter(r=>r.status==='Rejected').length);
+  $('#m-revoked').text(records.filter(r=>r.status==='Revoked').length);
+  // Show/hide pending alert banner
+  if (pendingCount > 0) {
+    $('#pending-alert-text').text(`You have ${pendingCount} pending application${pendingCount > 1 ? 's' : ''} awaiting review.`);
+    $('#pending-alert-row').show();
+  } else {
+    $('#pending-alert-row').hide();
+  }
+}
+
+// ── DATATABLE ─────────────────────────────────────────────────────
+let dt;
+function buildTable() {
+  dt = $('#idTable').DataTable({
+    data: records,
+    pageLength: 7,
+    lengthChange: false,
+    columns: [
+      { data: 'name', render: (v,t,r) =>
+          `<div class="d-flex align-items-center gap-2">
+            ${r.photo
+              ? `<img src="${r.photo}" style="width:30px;height:30px;object-fit:cover;border-radius:50%;border:2px solid #e2e8f0;flex-shrink:0;" />`
+              : avatarHTML(v)}
+            <span>${v}</span>
+          </div>`
+      },
+      { data: 'id',   render: v => `<span class="id-code">${v}</span>` },
+      { data: 'type' },
+      { data: 'dept', render: v => {
+          const c = COLORS_MAP[v]||'#64748b';
+          return `<span style="color:${c};font-weight:500">${v}</span>`;
+        }
+      },
+      { data: 'status', render: v => statusBadge(v) },
+      { data: 'expires' },
+      { data: null, orderable: false, render: (v,t,r) =>
+          `<div class="d-flex gap-1">
+            <button class="btn btn-outline-secondary btn-sm py-0 view-btn"   data-id="${r.id}" title="View"><i class="fa fa-eye fa-xs"></i></button>
+            <button class="btn btn-outline-success   btn-sm py-0 renew-btn"  data-id="${r.id}" title="Renew"><i class="fa fa-rotate fa-xs"></i></button>
+            <button class="btn btn-outline-danger    btn-sm py-0 action-btn" data-id="${r.id}" title="${r.status==='Active'?'Revoke':'Activate'}">
+              <i class="fa fa-xs ${r.status==='Active'?'fa-ban':'fa-circle-check'}"></i>
+            </button>
+          </div>`
+      },
+    ],
+    dom: "<'row mb-2'<'col-sm-6'l><'col-sm-6'f>>rt<'row mt-2'<'col-sm-6'i><'col-sm-6'p>>",
+    language: { search: '', searchPlaceholder: 'Search name or ID…' }
+  });
+
+  $('#statusFilter').on('change', function() { dt.column(4).search($(this).val()).draw(); });
+
+  $('#idTable tbody').on('click', 'tr', function() {
+    const data = dt.row(this).data();
+    if(data) showDetail(data.id);
+  });
+  $('#idTable tbody').on('click', '.view-btn',   function(e){ e.stopPropagation(); showDetail($(this).data('id')); });
+  $('#idTable tbody').on('click', '.renew-btn',  function(e){ e.stopPropagation(); renewRecord($(this).data('id')); });
+  $('#idTable tbody').on('click', '.action-btn', function(e){ e.stopPropagation(); toggleStatus($(this).data('id')); });
+}
+
+function refreshTable() { dt.clear().rows.add(records).draw(); }
+
+// ── DETAIL PANEL ──────────────────────────────────────────────────
+function showDetail(id) {
+  const r = records.find(x=>x.id===id);
+  if(!r) return;
+  const now = new Date();
+  const daysLeft = Math.ceil((new Date(r.expires)-now)/86400000);
+  const expiryColor = daysLeft<0?'text-danger':daysLeft<=30?'text-warning':'text-success';
+
+  // Personal info from application data
+  const pd = r.personalData || {};
+  const personalRows = pd.fullName ? `
+    <div class="detail-section-title mt-3 mb-1" style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);">Personal Info</div>
+    ${pd.age          ? `<div class="detail-row"><span class="detail-key">Age</span><span class="detail-val">${pd.age}</span></div>` : ''}
+    ${pd.birthdate    ? `<div class="detail-row"><span class="detail-key">Date of Birth</span><span class="detail-val">${pd.birthdate}</span></div>` : ''}
+    ${pd.placeOfBirth ? `<div class="detail-row"><span class="detail-key">Place of Birth</span><span class="detail-val" style="max-width:130px;text-align:right;font-size:12px">${pd.placeOfBirth}</span></div>` : ''}
+    ${pd.gender       ? `<div class="detail-row"><span class="detail-key">Gender</span><span class="detail-val">${pd.gender}</span></div>` : ''}
+    ${pd.civilStatus  ? `<div class="detail-row"><span class="detail-key">Civil Status</span><span class="detail-val">${pd.civilStatus}</span></div>` : ''}
+    ${pd.nationality  ? `<div class="detail-row"><span class="detail-key">Nationality</span><span class="detail-val">${pd.nationality}</span></div>` : ''}
+    ${pd.address      ? `<div class="detail-row"><span class="detail-key">Address</span><span class="detail-val" style="max-width:130px;text-align:right;font-size:11px">${pd.address}</span></div>` : ''}
+    ${pd.contactNumber? `<div class="detail-row"><span class="detail-key">Contact</span><span class="detail-val">${pd.contactNumber}</span></div>` : ''}
+  ` : '';
+
+  // Attachments
+  const attachments = r.attachments || [];
+  const DOC_LABEL = { dl:"Driver's License", pp:'Passport ID', eid:'Existing ID', bc:'Birth Certificate' };
+  let attachHTML = '';
+  if (attachments.length > 0) {
+    // Store attachment data safely (avoids embedding raw base64 in onclick attributes)
+    Object.keys(_detailAttachStore).forEach(k => delete _detailAttachStore[k]);
+    const items = attachments.map((a, i) => {
+      const storeKey = `detail__${r.id}__${i}`;
+      const label = DOC_LABEL[a.slot] || a.name;
+      _detailAttachStore[storeKey] = { dataURL: a.dataURL, label, name: a.name, size: a.size, type: a.type };
+      const isImage = a.type && a.type.startsWith('image/');
+      const isPDF   = a.type === 'application/pdf' || (a.name && a.name.toLowerCase().endsWith('.pdf'));
+      const thumb = isImage
+        ? `<img src="${a.dataURL}" style="width:36px;height:36px;object-fit:cover;border-radius:6px;border:1px solid var(--border);flex-shrink:0;" />`
+        : `<span style="font-size:20px;flex-shrink:0;"><i class="fa-solid ${isPDF ? 'fa-file-pdf' : 'fa-file'}" style="color:${isPDF ? '#ef4444' : '#64748b'};"></i></span>`;
+      const kb = a.size ? (a.size/1024).toFixed(0)+' KB' : '';
+      return `<div style="display:flex;align-items:center;gap:8px;background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:12px;">
+        ${thumb}
+        <div style="flex:1;overflow:hidden;">
+          <div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${label}</div>
+          <div style="font-size:10px;color:var(--muted);">${a.name}${kb?' · '+kb:''}</div>
+        </div>
+        <button onclick="viewAttachment('${storeKey}')" style="background:none;border:none;cursor:pointer;color:var(--accent);font-size:13px;padding:4px 6px;border-radius:5px;transition:background .15s;" onmouseover="this.style.background='var(--accent-soft)'" onmouseout="this.style.background='none'" title="View ${label}">
+          <i class="fa fa-eye"></i>
+        </button>
+      </div>`;
+    }).join('');
+    attachHTML = `
+      <div class="detail-section-title mt-3 mb-1" style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);">
+        <i class="fa fa-paperclip fa-xs me-1"></i>Attachments (${attachments.length})
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;">${items}</div>`;
+  }
+
+  // Action buttons by status
+  let actionButtons = '';
+  if (r.status === 'Pending') {
+    actionButtons = `
+      <button class="btn btn-success btn-sm" onclick="approveRecord('${r.id}')"><i class="fa fa-circle-check me-1 fa-xs"></i>Approve</button>
+      <button class="btn btn-danger btn-sm"  onclick="rejectRecord('${r.id}')"><i class="fa fa-circle-xmark me-1 fa-xs"></i>Reject</button>
+      <button class="btn btn-outline-secondary btn-sm" onclick="renewRecord('${r.id}')"><i class="fa fa-rotate me-1 fa-xs"></i>Renew</button>`;
+  } else if (r.status === 'Rejected') {
+    actionButtons = `
+      <button class="btn btn-success btn-sm" onclick="approveRecord('${r.id}')"><i class="fa fa-circle-check me-1 fa-xs"></i>Approve Instead</button>`;
+  } else {
+    actionButtons = `
+      ${r.status!=='Active' ? `<button class="btn btn-success btn-sm" onclick="activateDirect('${r.id}')"><i class="fa fa-circle-check me-1 fa-xs"></i>Activate</button>` : ''}
+      ${r.status==='Active' ? `<button class="btn btn-outline-danger btn-sm" onclick="toggleStatus('${r.id}')"><i class="fa fa-ban me-1 fa-xs"></i>Revoke</button>` : ''}
+      <button class="btn btn-outline-secondary btn-sm" onclick="renewRecord('${r.id}')"><i class="fa fa-rotate me-1 fa-xs"></i>Renew</button>`;
+  }
+
+  const rejectionRow = r.rejectedReason
+    ? `<div class="detail-row"><span class="detail-key">Reason</span><span class="detail-val text-danger" style="max-width:150px;text-align:right;font-size:11px">${r.rejectedReason}</span></div>`
+    : '';
+
+  $('#detailPanel').html(`
+    <div class="d-flex align-items-center gap-3 mb-3 pb-3 border-bottom">
+      ${r.photo
+        ? `<div style="position:relative;display:inline-block;cursor:pointer;flex-shrink:0;" onclick="viewPhoto(this.dataset.src, this.dataset.name)" data-src="${r.photo}" data-name="${r.name.replace(/"/g,'&quot;')}" title="View photo">
+            <img src="${r.photo}" style="width:42px;height:42px;object-fit:cover;border-radius:50%;border:2px solid var(--border);" />
+            <div style="position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,.38);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s;" class="photo-hover-overlay"><i class="fa fa-eye" style="color:#fff;font-size:11px;pointer-events:none;"></i></div>
+          </div>`
+        : avatarHTML(r.name, 42)}
+      <div>
+        <div class="fw-600 fs-6">${r.name}</div>
+        <div class="text-muted" style="font-size:12px">${r.type} · ${r.dept}</div>
+      </div>
+    </div>
+    <div class="detail-section-title mb-1" style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);">ID Info</div>
+    <div class="detail-row"><span class="detail-key">ID Number</span><span class="detail-val id-code">${r.id}</span></div>
+    <div class="detail-row"><span class="detail-key">Status</span><span class="detail-val">${statusBadge(r.status)}</span></div>
+    <div class="detail-row"><span class="detail-key">Access</span><span class="detail-val">${r.level}</span></div>
+    <div class="detail-row"><span class="detail-key">Issued</span><span class="detail-val">${r.issued}</span></div>
+    <div class="detail-row"><span class="detail-key">Expires</span><span class="detail-val ${expiryColor}">${r.expires} <small>(${daysLeft}d)</small></span></div>
+    ${r.note ? `<div class="detail-row"><span class="detail-key">Note</span><span class="detail-val" style="max-width:150px;text-align:right;font-size:12px">${r.note}</span></div>` : ''}
+    ${rejectionRow}
+    ${personalRows}
+    ${attachHTML}
+    <div class="d-flex gap-2 mt-3 flex-wrap">${actionButtons}</div>`);
+}
+
+// ── ACTIONS ───────────────────────────────────────────────────────
+function toggleStatus(id) {
+  const r = records.find(x=>x.id===id);
+  if(!r) return;
+  if(r.status==='Active') {
+    Swal.fire({
+      title: 'Revoke this ID?',
+      text: `${r.name}'s access will be suspended.`,
+      icon: 'warning', showCancelButton: true,
+      confirmButtonColor: '#dc2626', confirmButtonText: 'Yes, revoke',
+    }).then(res => {
+      if(res.isConfirmed) {
+        r.status = 'Revoked';
+        syncSubStatus(r, 'revoked', 'Revoked by administrator');
+        pushActivity('#ef4444', `<b>${r.name}</b> ID revoked`, 'just now');
+        refresh(); showDetail(id);
+        Swal.fire({ icon:'success', title:'Revoked', text:`${r.name}'s ID has been revoked.`, timer:2000, showConfirmButton:false });
+      }
+    });
+  } else { activateDirect(id); }
+}
+
+function activateDirect(id) {
+  const r = records.find(x=>x.id===id);
+  if(!r) return;
+  r.status = 'Active';
+  syncSubStatus(r, 'approved');
+  pushActivity('#22c55e', `<b>${r.name}</b> ID activated`, 'just now');
+  refresh(); showDetail(id);
+  Swal.fire({ icon:'success', title:'Activated', text:`${r.name}'s ID is now active.`, timer:2000, showConfirmButton:false });
+}
+
+function approveRecord(id) {
+  const r = records.find(x=>x.id===id);
+  if(!r) return;
+  Swal.fire({
+    title: 'Approve this ID?',
+    text: `${r.name}'s application will be approved and set to Active.`,
+    icon: 'question', showCancelButton: true,
+    confirmButtonColor: '#16a34a', confirmButtonText: 'Yes, Approve',
+  }).then(res => {
+    if(res.isConfirmed) {
+      r.status = 'Active';
+      r.rejectedReason = null;
+      syncSubStatus(r, 'approved');
+      pushActivity('#22c55e', `<b>${r.name}</b> application approved`, 'just now');
+      refresh(); showDetail(id);
+      Swal.fire({ icon:'success', title:'Approved!', text:`${r.name}'s ID is now active.`, timer:2000, showConfirmButton:false });
+    }
+  });
+}
+
+function rejectRecord(id) {
+  const r = records.find(x=>x.id===id);
+  if(!r) return;
+  Swal.fire({
+    title: 'Reject Application',
+    input: 'textarea',
+    inputLabel: 'Reason for rejection',
+    inputPlaceholder: 'e.g. Incomplete documents, Invalid ID submitted…',
+    inputAttributes: { rows: 3 },
+    showCancelButton: true,
+    confirmButtonColor: '#dc2626', confirmButtonText: 'Reject',
+    inputValidator: v => { if(!v.trim()) return 'Please provide a reason.'; }
+  }).then(res => {
+    if(res.isConfirmed) {
+      r.status = 'Rejected';
+      r.rejectedReason = res.value.trim();
+      syncSubStatus(r, 'rejected', res.value.trim());
+      pushActivity('#ef4444', `<b>${r.name}</b> application rejected`, 'just now');
+      refresh(); showDetail(id);
+      Swal.fire({ icon:'error', title:'Rejected', text:`${r.name}'s application has been rejected.`, timer:2200, showConfirmButton:false });
+    }
+  });
+}
+
+// Safe store for detail-panel attachments (avoids embedding base64 in onclick)
+const _detailAttachStore = {};
+
+function viewAttachment(storeKey) {
+  const entry = _detailAttachStore[storeKey];
+  if (!entry) return;
+  const { dataURL, label, name, size, type } = entry;
+
+  $('#attachmentViewerLabel').text(label || name || 'Attachment');
+  const kb = size ? (size / 1024).toFixed(0) + ' KB' : '';
+  $('#attachViewerMeta').text(kb ? `· ${kb}` : '');
+
+  const isImage = type && type.startsWith('image/');
+  const isPDF   = type === 'application/pdf' || (name && name.toLowerCase().endsWith('.pdf'));
+
+  if (isImage) {
+    $('#attachViewerIcon').attr('class', 'fa-solid fa-image text-primary');
+    $('#attachViewerBody').html(
+      `<img src="${dataURL}" style="max-width:100%;max-height:75vh;object-fit:contain;display:block;margin:auto;padding:12px;" />`
+    );
+  } else if (isPDF) {
+    $('#attachViewerIcon').attr('class', 'fa-solid fa-file-pdf text-danger');
+    $('#attachViewerBody').html(
+      `<iframe src="${dataURL}" style="width:100%;height:75vh;border:none;display:block;border-radius:0 0 14px 14px;"></iframe>`
+    );
+  } else {
+    $('#attachViewerIcon').attr('class', 'fa-solid fa-file text-muted');
+    $('#attachViewerBody').html(
+      `<div class="text-center py-5" style="color:#94a3b8;">
+        <i class="fa-solid fa-file fa-3x mb-3 d-block"></i>
+        <div style="font-size:14px;font-weight:600;color:#e2e8f0;">${label || name}</div>
+        <div style="font-size:12px;margin-top:4px;">Preview not available — use Download to open.</div>
+      </div>`
+    );
+  }
+
+  // Download button
+  $('#attachViewerDownloadBtn').off('click').on('click', function () {
+    const a = document.createElement('a');
+    a.href = dataURL;
+    a.download = name || label || 'attachment';
+    a.click();
+  });
+
+  new bootstrap.Modal(document.getElementById('attachmentViewerModal')).show();
+}
+
+function viewStoredAttachment(storeKey) {
+  // Check detail store first, then pending store
+  if (_detailAttachStore[storeKey]) { viewAttachment(storeKey); return; }
+  const entry = _pendingAttachStore[storeKey];
+  if (!entry) return;
+  // Detect type from dataURL if not set
+  let type = entry.type;
+  if (!type && entry.dataURL) {
+    if (entry.dataURL.startsWith('data:image')) type = 'image/jpeg';
+    else if (entry.dataURL.startsWith('data:application/pdf')) type = 'application/pdf';
+  }
+  _detailAttachStore['__tmp__'] = { dataURL: entry.dataURL, label: entry.label, name: entry.name || entry.label, size: entry.size, type };
+  viewAttachment('__tmp__');
+}
+
+function renewRecord(id) {
+  const r = records.find(x=>x.id===id);
+  if(!r) return;
+  Swal.fire({
+    title: 'Renew ID?', text: `Extend ${r.name}'s ID by 1 year.`,
+    icon: 'question', showCancelButton: true,
+    confirmButtonColor: '#2563eb', confirmButtonText: 'Renew',
+  }).then(res => {
+    if(res.isConfirmed) {
+      const d = new Date(r.expires);
+      d.setFullYear(d.getFullYear()+1);
+      r.expires = d.toISOString().split('T')[0];
+      pushActivity('#3b82f6', `<b>${r.name}</b> ID renewed for 1 year`, 'just now');
+      refresh(); showDetail(id);
+      Swal.fire({ icon:'success', title:'Renewed!', text:`New expiry: ${r.expires}`, timer:2000, showConfirmButton:false });
+    }
+  });
+}
+
+
+// ── PENDING APPLICATIONS VIEW ──────────────────────────────────────
+// Safe attachment store: avoids embedding raw base64 in onclick strings
+const _pendingAttachStore = {};
+
+function renderPendingApplications() {
+  records = loadAllRecords();
+  const pending = records.filter(r => r.status === 'Pending');
+  const badge = pending.length;
+  $('#pending-apps-count-badge').text(`${badge} pending`);
+  $('#app-nav-badge').text(badge).toggle(badge > 0);
+  $('#pending-nav-badge').text(badge > 0 ? badge : '').toggle(badge > 0);
+
+  if (!pending.length) {
+    $('#pending-apps-container').html(
+      '<div class="dash-card"><div class="card-body-pad text-center py-5 text-muted"><i class="fa-solid fa-inbox fa-2x mb-2 d-block"></i><small>No pending applications. All caught up!</small></div></div>'
+    );
+    return;
+  }
+
+  const DOC_LABEL = { dl:"Driver's License", pp:'Passport', eid:'Existing ID', bc:'Birth Certificate' };
+
+  // Clear attachment store and rebuild
+  Object.keys(_pendingAttachStore).forEach(k => delete _pendingAttachStore[k]);
+
+  const cardsHTML = pending.map(r => {
+    const pd = r.personalData || {};
+
+    const pills = [
+      pd.age          ? `<span class="info-pill"><i class="fa fa-cake-candles fa-xs"></i> ${pd.age} yrs</span>` : '',
+      pd.gender       ? `<span class="info-pill"><i class="fa fa-venus-mars fa-xs"></i> ${pd.gender}</span>` : '',
+      pd.civilStatus  ? `<span class="info-pill"><i class="fa fa-heart fa-xs"></i> ${pd.civilStatus}</span>` : '',
+      pd.nationality  ? `<span class="info-pill"><i class="fa fa-flag fa-xs"></i> ${pd.nationality}</span>` : '',
+      pd.contactNumber? `<span class="info-pill"><i class="fa fa-phone fa-xs"></i> ${pd.contactNumber}</span>` : '',
+      pd.birthdate    ? `<span class="info-pill"><i class="fa fa-calendar fa-xs"></i> ${pd.birthdate}</span>` : '',
+    ].filter(Boolean).join('');
+
+    const addressRow = pd.address
+      ? `<div class="addr-row"><i class="fa fa-location-dot fa-xs me-1" style="color:var(--muted)"></i>${pd.address}</div>` : '';
+    const pobRow = pd.placeOfBirth
+      ? `<div class="addr-row"><i class="fa fa-map-pin fa-xs me-1" style="color:var(--muted)"></i>Born in ${pd.placeOfBirth}</div>` : '';
+
+    // Attachments — store data by key to avoid inline base64 in onclick
+    const attachments = r.attachments || [];
+    let attachHTML = '';
+    if (attachments.length) {
+      const items = attachments.map((a, i) => {
+        const storeKey = `${r.id}__${i}`;
+        _pendingAttachStore[storeKey] = { dataURL: a.dataURL, label: DOC_LABEL[a.slot] || a.name, name: a.name, size: a.size, type: a.type };
+        const label = DOC_LABEL[a.slot] || a.name;
+        const isImg = a.type && a.type.startsWith('image/');
+        return `<div class="attach-chip" onclick="viewStoredAttachment('${storeKey}')" title="View ${label}">
+          ${isImg
+            ? `<img src="${a.dataURL}" style="width:28px;height:28px;object-fit:cover;border-radius:5px;border:1px solid var(--border);flex-shrink:0;" />`
+            : `<i class="fa-solid fa-file-pdf" style="color:#ef4444;font-size:16px;flex-shrink:0;"></i>`}
+          <span style="font-size:11px;font-weight:600;">${label}</span>
+          <i class="fa fa-eye fa-xs" style="color:var(--accent);margin-left:auto;"></i>
+        </div>`;
+      }).join('');
+      attachHTML = `
+        <div class="mt-3">
+          <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">
+            <i class="fa fa-paperclip fa-xs me-1"></i>Supporting Documents (${attachments.length})
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:7px;">${items}</div>
+        </div>`;
+    }
+
+    return `
+    <div class="dash-card mb-3" id="app-card-${r.id}" style="border-left:3px solid var(--warning);">
+      <div class="card-body-pad">
+        <div class="d-flex align-items-start gap-3 flex-wrap">
+
+          <!-- Photo -->
+          <div style="flex-shrink:0;text-align:center;">
+            ${r.photo
+              ? `<div style="position:relative;display:inline-block;cursor:pointer;" onclick="viewPhoto(this.dataset.src, this.dataset.name)" data-src="${r.photo}" data-name="${r.name.replace(/"/g,'&quot;')}">
+                  <img src="${r.photo}" style="width:76px;height:95px;object-fit:cover;border-radius:10px;border:2px solid var(--border);display:block;" />
+                  <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;border-radius:10px;background:rgba(0,0,0,.38);opacity:0;transition:opacity .15s;" class="photo-hover-overlay">
+                    <i class="fa fa-magnifying-glass-plus" style="color:#fff;font-size:20px;pointer-events:none;"></i>
+                  </div>
+                </div>`
+              : `<div style="width:76px;height:95px;border-radius:10px;background:#f1f5f9;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;">${avatarHTML(r.name, 48)}</div>`}
+            <div style="font-size:9px;color:var(--muted);margin-top:5px;text-align:center;">${r.photo ? '<i class=\'fa fa-magnifying-glass fa-xs\'></i> VIEW PHOTO' : 'ID PHOTO'}</div>
+          </div>
+
+          <!-- Details -->
+          <div style="flex:1;min-width:200px;">
+            <div class="d-flex align-items-center gap-2 flex-wrap mb-2">
+              <span style="font-size:16px;font-weight:700;">${r.name}</span>
+              ${statusBadge(r.status)}
+            </div>
+            <div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:10px;">Ref: ${r.id}</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">${pills}</div>
+            ${addressRow}${pobRow}
+            <div style="font-size:11px;color:var(--muted);margin-top:6px;"><i class="fa fa-clock fa-xs me-1"></i>Submitted: <strong>${r.issued}</strong></div>
+            ${attachHTML}
+          </div>
+
+          <!-- Action buttons -->
+          <div class="d-flex flex-column gap-2" style="flex-shrink:0;min-width:130px;">
+            <button class="btn btn-success btn-sm fw-600" onclick="approvePending('${r.id}')">
+              <i class="fa fa-circle-check me-1"></i>Approve
+            </button>
+            <button class="btn btn-danger btn-sm fw-600" onclick="rejectPending('${r.id}')">
+              <i class="fa fa-circle-xmark me-1"></i>Reject
+            </button>
+            <hr style="margin:2px 0;border-color:var(--border);">
+            <button class="btn btn-outline-secondary btn-sm" onclick="viewFullDetail('${r.id}')">
+              <i class="fa fa-address-card me-1 fa-xs"></i>Full Details
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  $('#pending-apps-container').html(cardsHTML);
+}
+
+// Called from pending applications card — approve and refresh the view
+function approvePending(id) {
+  const r = records.find(x => x.id === id);
+  if (!r) return;
+  Swal.fire({
+    title: 'Approve Application?',
+    html: `<b>${r.name}</b>'s ID will be set to <span style="color:#16a34a;font-weight:700;">Active</span>.`,
+    icon: 'question', showCancelButton: true,
+    confirmButtonColor: '#16a34a', confirmButtonText: '<i class="fa fa-circle-check me-1"></i>Yes, Approve',
+  }).then(res => {
+    if (!res.isConfirmed) return;
+    r.status = 'Active';
+    r.rejectedReason = null;
+    syncSubStatus(r, 'approved');
+    pushActivity('#22c55e', `<b>${r.name}</b> application approved ✓`, new Date().toLocaleTimeString('en-PH'));
+    refresh();
+    renderPendingApplications();
+    Swal.fire({ icon:'success', title:'Approved!', text:`${r.name}'s ID is now Active.`, timer:2000, showConfirmButton:false });
+  });
+}
+
+// Called from pending applications card — reject and refresh the view
+function rejectPending(id) {
+  const r = records.find(x => x.id === id);
+  if (!r) return;
+  Swal.fire({
+    title: 'Reject Application',
+    html: `<div style="font-size:13px;margin-bottom:8px;">Rejecting <b>${r.name}</b>'s application. Please provide a reason:</div>`,
+    input: 'textarea',
+    inputPlaceholder: 'e.g. Incomplete documents, blurry photo, invalid ID submitted…',
+    inputAttributes: { rows: 3 },
+    showCancelButton: true,
+    confirmButtonColor: '#dc2626', confirmButtonText: '<i class="fa fa-circle-xmark me-1"></i>Reject',
+    inputValidator: v => { if (!v.trim()) return 'Please provide a reason for rejection.'; }
+  }).then(res => {
+    if (!res.isConfirmed) return;
+    r.status = 'Rejected';
+    r.rejectedReason = res.value.trim();
+    syncSubStatus(r, 'rejected', res.value.trim());
+    pushActivity('#ef4444', `<b>${r.name}</b> application rejected`, new Date().toLocaleTimeString('en-PH'));
+    refresh();
+    renderPendingApplications();
+    Swal.fire({ icon:'error', title:'Rejected', text:`${r.name}'s application has been rejected.`, timer:2200, showConfirmButton:false });
+  });
+}
+
+// View attachment safely (avoids inline base64 in onclick)
+function viewStoredAttachment(storeKey) {
+  const a = _pendingAttachStore[storeKey];
+  if (!a) return;
+  viewAttachment(a.dataURL, a.label, a.name, a.size, a.type);
+}
+
+// ── ATTACHMENT / PHOTO VIEWER ──────────────────────────────────────
+// Opens the attachmentViewerModal with an image or PDF preview
+function viewAttachment(dataURL, label, name, size, type) {
+  // Support being called with a storeKey from _detailAttachStore
+  if (typeof dataURL === 'string' && _detailAttachStore[dataURL]) {
+    const a = _detailAttachStore[dataURL];
+    dataURL = a.dataURL; label = a.label; name = a.name; size = a.size; type = a.type;
+  }
+
+  const isImage = (type && type.startsWith('image/')) || (dataURL && dataURL.startsWith('data:image'));
+  const isPDF   = (type === 'application/pdf') || (name && name.toLowerCase().endsWith('.pdf'));
+  const kb      = size ? (size / 1024).toFixed(0) + ' KB' : '';
+
+  $('#attachmentViewerLabel').text(label || name || 'Attachment');
+  $('#attachViewerIcon').attr('class', `fa-solid ${isImage ? 'fa-image text-primary' : isPDF ? 'fa-file-pdf text-danger' : 'fa-file text-muted'}`);
+  $('#attachViewerMeta').text([name, kb].filter(Boolean).join(' · '));
+
+  // Download button
+  $('#attachViewerDownloadBtn').off('click').on('click', function () {
+    if (!dataURL) return;
+    const a = document.createElement('a');
+    a.href = dataURL;
+    a.download = name || 'attachment';
+    a.click();
+  });
+
+  // Body content
+  const $body = $('#attachViewerBody');
+  if (isImage && dataURL) {
+    $body.html(`<img src="${dataURL}" style="max-width:100%;max-height:70vh;object-fit:contain;display:block;margin:auto;padding:12px;" />`);
+  } else if (isPDF && dataURL) {
+    $body.html(`<iframe src="${dataURL}" style="width:100%;height:70vh;border:none;"></iframe>`);
+  } else if (dataURL) {
+    $body.html(`<div style="color:#94a3b8;text-align:center;padding:40px;">
+      <i class="fa-solid fa-file fa-3x mb-3 d-block"></i>
+      <div style="font-size:14px;">Preview not available for this file type.</div>
+      <div style="font-size:12px;margin-top:6px;">${name || ''}</div>
+    </div>`);
+  } else {
+    $body.html(`<div style="color:#94a3b8;text-align:center;padding:40px;">
+      <i class="fa-solid fa-image-slash fa-3x mb-3 d-block"></i>
+      <div style="font-size:14px;">No photo available.</div>
+    </div>`);
+  }
+
+  new bootstrap.Modal(document.getElementById('attachmentViewerModal')).show();
+}
+
+// Opens the photo viewer modal for a plain image src (profile photo)
+function viewPhoto(src, holderName) {
+  if (!src) return;
+  viewAttachment(src, (holderName || 'Applicant') + ' — ID Photo', 'id-photo.jpg', null, 'image/jpeg');
+}
+
+// Navigate to dashboard and show detail panel
+function viewFullDetail(id) {
+  showView('dashboard');
+  setTimeout(() => showDetail(id), 150);
+}
+
+function updateAppBadge() {
+  const cnt = records.filter(r => r.status === 'Pending').length;
+  $('#app-nav-badge').text(cnt).toggle(cnt > 0);
+  $('#pending-nav-badge').text(cnt > 0 ? cnt : '').toggle(cnt > 0);
+}
+
+// ── ACTIVITY FEED ─────────────────────────────────────────────────
+function pushActivity(color, text, time) {
+  activity.unshift({ color, text, time });
+  renderActivity();
+}
+
+function renderActivity() {
+  if (!activity.length) {
+    $('#activity-feed').html('<div class="text-center py-4 text-muted" style="font-size:12px;"><i class="fa-solid fa-bolt mb-1 d-block"></i>No recent activity.</div>');
+    return;
+  }
+  $('#activity-feed').html(activity.slice(0,6).map(a =>
+    `<div class="activity-item">
+      <div class="act-dot" style="background:${a.color}"></div>
+      <div><div>${a.text}</div><div class="act-time">${a.time}</div></div>
+    </div>`).join(''));
+}
+
+// ── CALENDAR ──────────────────────────────────────────────────────
+let calYear, calMonth;
+
+function renderCalendar() {
+  const now = new Date();
+  if (calYear === undefined) { calYear = now.getFullYear(); calMonth = now.getMonth(); }
+  const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  $('#calMonthLabel').text(monthNames[calMonth] + ' ' + calYear);
+  const firstDay    = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  const daysInPrev  = new Date(calYear, calMonth, 0).getDate();
+  const todayStr    = now.toISOString().split('T')[0];
+  let html = ['Su','Mo','Tu','We','Th','Fr','Sa'].map(d => `<div class="cal-dow">${d}</div>`).join('');
+  for (let i = firstDay - 1; i >= 0; i--) html += `<div class="cal-day other-month">${daysInPrev - i}</div>`;
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    html += `<div class="cal-day${dateStr === todayStr ? ' today' : ''}">${d}</div>`;
+  }
+  const trailing = (firstDay + daysInMonth) % 7;
+  for (let i = 1; i <= (trailing ? 7 - trailing : 0); i++) html += `<div class="cal-day other-month">${i}</div>`;
+  $('#calGrid').html(html);
+}
+
+$(document).on('click', '#calPrev', function() { calMonth--; if(calMonth<0){calMonth=11;calYear--;} renderCalendar(); });
+$(document).on('click', '#calNext', function() { calMonth++; if(calMonth>11){calMonth=0;calYear++;} renderCalendar(); });
+
+// ── CHARTS ────────────────────────────────────────────────────────
+let donutChart, barChart;
+
+function buildCharts() {
+  const statuses = ['Active','Pending','Rejected','Revoked','Expired'];
+  const counts   = statuses.map(s => records.filter(r=>r.status===s).length);
+  donutChart = new ApexCharts(document.querySelector('#donutChart'), {
+    chart: { type:'donut', height:220, fontFamily:'DM Sans,sans-serif', toolbar:{show:false} },
+    series: counts,
+    labels: statuses,
+    colors: ['#22c55e','#f59e0b','#9d174d','#ef4444','#94a3b8'],
+    legend: { position:'bottom', fontSize:'12px' },
+    plotOptions: { pie:{ donut:{ size:'65%', labels:{ show:true, total:{ show:true, label:'Total', formatter:()=>records.length } } } } },
+    dataLabels: { enabled:false },
+    stroke: { width:0 },
+  });
+  donutChart.render();
+
+  const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const now2 = new Date();
+  const months = []; const issued = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now2.getFullYear(), now2.getMonth() - i, 1);
+    months.push(monthNames[d.getMonth()]);
+    issued.push(records.filter(r => {
+      const rd = new Date(r.issued);
+      return rd.getFullYear()===d.getFullYear() && rd.getMonth()===d.getMonth();
+    }).length);
+  }
+  barChart = new ApexCharts(document.querySelector('#barChart'), {
+    chart: { type:'bar', height:220, fontFamily:'DM Sans,sans-serif', toolbar:{show:false} },
+    series: [{ name:'Issued', data: issued }],
+    xaxis: { categories: months, axisBorder:{show:false}, axisTicks:{show:false}, labels:{style:{fontSize:'11px'}} },
+    yaxis: { labels:{style:{fontSize:'11px'}} },
+    colors: ['#2563eb'],
+    plotOptions: { bar:{ columnWidth:'45%', borderRadius:4 } },
+    dataLabels: { enabled:false },
+    grid: { borderColor:'#f1f5f9', strokeDashArray:3 },
+    tooltip: { y:{ formatter:v=>`${v} IDs` } },
+  });
+  barChart.render();
+}
+
+function updateDonut() {
+  const statuses = ['Active','Pending','Rejected','Revoked','Expired'];
+  donutChart.updateSeries(statuses.map(s=>records.filter(r=>r.status===s).length));
+}
+
+// ── MASTER REFRESH ────────────────────────────────────────────────
+function refresh() {
+  records = loadAllRecords();
+  updateMetrics();
+  refreshTable();
+  renderCalendar();
+  updateDonut();
+  updateAppBadge();
+  // Refresh bar chart with latest data
+  if (barChart) {
+    const monthNames2 = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const now3 = new Date();
+    const newIssued = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now3.getFullYear(), now3.getMonth() - i, 1);
+      newIssued.push(records.filter(r => {
+        const rd = new Date(r.issued);
+        return rd.getFullYear()===d.getFullYear() && rd.getMonth()===d.getMonth();
+      }).length);
+    }
+    barChart.updateSeries([{ name:'Issued', data: newIssued }]);
+  }
+}
+
+// ── NAVIGATION ────────────────────────────────────────────────────
+const VIEWS = ['dashboard','all-ids','pending-applications','activity-log','renewals','revocations','access-control','settings','reports'];
+
+function showView(view) {
+  // Hide all alternate views and show/hide main dashboard
+  const isDashboard = (view === 'dashboard');
+  // Main dashboard content section (the one with metrics-row)
+  const $dashContent = $('#metrics-row').closest('.content');
+  $dashContent.toggle(isDashboard);
+
+  VIEWS.filter(v => v !== 'dashboard').forEach(v => {
+    $(`#view-${v}`).hide();
+  });
+
+  if (!isDashboard) {
+    $(`#view-${view}`).show();
+    renderView(view);
+  }
+
+  // Update topbar title
+  const titleMap = {
+    'dashboard':'Dashboard','all-ids':'All IDs','pending-applications':'Pending Applications',
+    'activity-log':'Activity Log','renewals':'Renewals','revocations':'Revocations',
+    'access-control':'Access Control','settings':'Settings','reports':'Reports'
+  };
+  $('.topbar h1').text(titleMap[view] || 'Dashboard');
+
+  // Update active nav
+  $('.sidebar-nav a').removeClass('active');
+  $(`.sidebar-nav a[data-view="${view}"]`).addClass('active');
+}
+
+function renderView(view) {
+  if (view === 'all-ids')                renderAllIds();
+  if (view === 'pending-applications')   renderPendingApplications();
+  if (view === 'activity-log')           renderActivityLog();
+  if (view === 'renewals')              renderRenewals();
+  if (view === 'revocations')           renderRevocations();
+  if (view === 'access-control')        renderAccessControl();
+  if (view === 'settings')              renderSettings();
+  if (view === 'reports')               renderReports();
+}
+
+// Sidebar nav click handler
+$(document).on('click', '.sidebar-nav a[data-view]', function(e) {
+  const view = $(this).data('view');
+  if (view === 'issue') return; // handled by modal
+  e.preventDefault();
+  showView(view);
+  if(window.innerWidth <= 768) $('#sidebar').removeClass('open');
+});
+
+// ── ALL IDs VIEW ──────────────────────────────────────────────────
+let allIdsTable;
+function renderAllIds() {
+  records = loadAllRecords();
+  const data = records;
+  if (allIdsTable) {
+    allIdsTable.clear().rows.add(data).draw();
+    return;
+  }
+  allIdsTable = $('#allIdsTable').DataTable({
+    data,
+    pageLength: 10,
+    columns: [
+      { data:'name', render:(v,t,r)=>`<div class="d-flex align-items-center gap-2">${r.photo?`<img src="${r.photo}" style="width:28px;height:28px;object-fit:cover;border-radius:50%;border:2px solid #e2e8f0;">`:avatarHTML(v)}<span>${v}</span></div>` },
+      { data:'id',   render:v=>`<span class="id-code">${v}</span>` },
+      { data:'type' },
+      { data:'dept', render:v=>`<span style="color:${COLORS_MAP[v]||'#64748b'};font-weight:500">${v}</span>` },
+      { data:'status', render:v=>statusBadge(v) },
+      { data:'issued' },
+      { data:'expires' },
+      { data:null, orderable:false, render:(v,t,r)=>
+        `<div class="d-flex gap-1">
+          <button class="btn btn-outline-secondary btn-sm py-0 view-btn2" data-id="${r.id}" title="View"><i class="fa fa-eye fa-xs"></i></button>
+          <button class="btn btn-outline-success btn-sm py-0 renew-btn2" data-id="${r.id}" title="Renew"><i class="fa fa-rotate fa-xs"></i></button>
+          <button class="btn btn-outline-danger btn-sm py-0 action-btn2" data-id="${r.id}" title="${r.status==='Active'?'Revoke':'Activate'}"><i class="fa fa-xs ${r.status==='Active'?'fa-ban':'fa-circle-check'}"></i></button>
+        </div>`
+      }
+    ],
+    dom: "<'row mb-2'<'col-sm-6'l><'col-sm-6'f>>rt<'row mt-2'<'col-sm-6'i><'col-sm-6'p>>",
+    language: { search:'', searchPlaceholder:'Search name or ID…' }
+  });
+  $('#allIds-statusFilter').on('change', function(){ allIdsTable.column(4).search($(this).val()).draw(); });
+  $('#allIds-deptFilter').on('change', function(){ allIdsTable.column(3).search($(this).val()).draw(); });
+  $('#allIdsTable tbody').on('click','.view-btn2',  function(e){ e.stopPropagation(); showView('dashboard'); setTimeout(()=>showDetail($(this).data('id')),100); });
+  $('#allIdsTable tbody').on('click','.renew-btn2', function(e){ e.stopPropagation(); renewRecord($(this).data('id')); allIdsTable.clear().rows.add(records).draw(); });
+  $('#allIdsTable tbody').on('click','.action-btn2',function(e){ e.stopPropagation(); toggleStatus($(this).data('id')); allIdsTable.clear().rows.add(records).draw(); });
+}
+
+// ── ACTIVITY LOG VIEW ─────────────────────────────────────────────
+function renderActivityLog() {
+  if (!activity.length) {
+    $('#activity-log-full').html('<div class="text-center py-5 text-muted"><i class="fa-solid fa-bolt fa-2x mb-2 d-block"></i><small>No activity recorded yet.</small></div>');
+    return;
+  }
+  $('#activity-log-full').html(activity.map((a,i) =>
+    `<div class="activity-item">
+      <div class="act-dot" style="background:${a.color}"></div>
+      <div style="flex:1"><div>${a.text}</div><div class="act-time">${a.time}</div></div>
+      <span style="font-size:11px;color:#94a3b8;">#${activity.length - i}</span>
+    </div>`
+  ).join(''));
+}
+
+function clearActivityLog() {
+  Swal.fire({ title:'Clear activity log?', icon:'warning', showCancelButton:true, confirmButtonColor:'#dc2626', confirmButtonText:'Clear' }).then(r => {
+    if (r.isConfirmed) { activity = []; renderActivityLog(); renderActivity(); Swal.fire({ icon:'success', title:'Log cleared', timer:1200, showConfirmButton:false }); }
+  });
+}
+
+// ── RENEWALS VIEW ─────────────────────────────────────────────────
+let renewalsDT = null;
+
+function renderRenewals() {
+  records = loadAllRecords();
+  const now = new Date();
+
+  // Pull renewal requests from localStorage
+  const renewalRequests = LS.get('id_renewal_requests') || [];
+
+  // Build enriched list: join request data with record data
+  const rows = renewalRequests.map(req => {
+    const r = records.find(x => x.id === req.id) || {};
+    const daysLeft = r.expires ? Math.ceil((new Date(r.expires) - now) / 86400000) : null;
+    return { ...req, name: r.name || req.name || '—', type: r.type || 'Municipal ID', expires: r.expires || '—', daysLeft, status: req.status || 'Pending' };
+  });
+
+  $('#renewals-count-badge').text(`${rows.length} request${rows.length !== 1 ? 's' : ''}`);
+  // Sync the sidebar badge to pending-only count
+  const pendingCnt = rows.filter(r => r.status === 'Pending').length;
+  if (pendingCnt > 0) $('#renewals-nav-badge').text(pendingCnt).show();
+  else $('#renewals-nav-badge').hide();
+
+  if (renewalsDT) { renewalsDT.destroy(); renewalsDT = null; }
+
+  if (!rows.length) {
+    $('#renewalsTable').closest('.table-responsive').hide();
+    $('#renewals-empty').show();
+    return;
+  }
+
+  $('#renewalsTable').closest('.table-responsive').show();
+  $('#renewals-empty').hide();
+
+  const tbody = rows.map(row => {
+    const dl = row.daysLeft;
+    const daysClass = dl === null ? 'text-muted' : dl < 0 ? 'text-danger fw-600' : dl <= 30 ? 'text-warning fw-600' : 'text-success';
+    const daysText  = dl === null ? '—' : dl < 0 ? `Expired ${Math.abs(dl)}d ago` : `${dl}d left`;
+
+    // ── Status badge + decision label ──
+    let statusBadgeHtml = '';
+    if (row.status === 'Approved') {
+      const approvedOn = row.approvedAt ? `<div style="font-size:10px;color:var(--success);margin-top:3px;"><i class="fa fa-calendar-check fa-xs me-1"></i>${row.approvedAt}</div>` : '';
+      statusBadgeHtml = `
+        <div style="cursor:pointer;" onclick="showRenewalDecisionDetail('${row.id}','Approved')">
+          <span class="status-badge badge-active"><i class="fa fa-circle-check fa-xs me-1"></i>Approved</span>
+          ${approvedOn}
+        </div>`;
+    } else if (row.status === 'Rejected') {
+      const reason = (row.rejectedReason || '').replace(/'/g, '&#39;');
+      const rejectedOn = row.rejectedAt ? `<div style="font-size:10px;color:var(--danger);margin-top:3px;"><i class="fa fa-calendar-xmark fa-xs me-1"></i>${row.rejectedAt}</div>` : '';
+      statusBadgeHtml = `
+        <div style="cursor:pointer;" onclick="showRenewalDecisionDetail('${row.id}','Rejected')">
+          <span class="status-badge badge-rejected"><i class="fa fa-circle-xmark fa-xs me-1"></i>Rejected</span>
+          ${rejectedOn}
+          ${reason ? `<div style="font-size:10px;color:#9d174d;margin-top:2px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${reason}"><i class="fa fa-comment-dots fa-xs me-1"></i>${reason}</div>` : ''}
+        </div>`;
+    } else {
+      statusBadgeHtml = `<span class="status-badge badge-pending"><i class="fa fa-hourglass-half fa-xs me-1"></i>Pending</span>`;
+    }
+
+    return `<tr>
+      <td>
+        <div class="d-flex align-items-center gap-2">
+          ${avatarHTML(row.name)}
+          <div>
+            <div class="fw-500" style="font-size:13px;">${row.name}</div>
+            <div style="font-size:11px;color:var(--muted);">${row.username ? '@' + row.username : ''}</div>
+          </div>
+        </div>
+      </td>
+      <td><span class="id-code">${row.id}</span></td>
+      <td style="font-size:13px;">${row.type}</td>
+      <td style="font-size:12px;color:var(--muted);">${row.requestedAt || '—'}</td>
+      <td style="font-size:12px;">${row.expires}</td>
+      <td><span class="${daysClass}" style="font-size:12px;">${daysText}</span></td>
+      <td>${statusBadgeHtml}</td>
+      <td>
+        <div class="d-flex gap-1">
+          ${row.status === 'Pending' ? `
+            <button class="btn btn-success btn-sm py-0" onclick="approveRenewal('${row.id}','${row.username||''}')"><i class="fa fa-circle-check fa-xs me-1"></i>Approve</button>
+            <button class="btn btn-danger btn-sm py-0" onclick="rejectRenewal('${row.id}','${row.username||''}')"><i class="fa fa-circle-xmark fa-xs me-1"></i>Reject</button>
+          ` : `
+            <button class="btn btn-outline-secondary btn-sm py-0" onclick="renewRecord('${row.id}')"><i class="fa fa-rotate fa-xs me-1"></i>Renew Again</button>
+          `}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  $('#renewals-table-body').html(tbody);
+
+  renewalsDT = $('#renewalsTable').DataTable({
+    pageLength: 10,
+    order: [[3, 'desc']],
+    columnDefs: [{ orderable: false, targets: 7 }],
+    language: {
+      emptyTable: 'No renewal requests found.',
+      search: 'Search requests:',
+      lengthMenu: 'Show _MENU_ requests'
+    }
+  });
+}
+
+function approveRenewal(id, username) {
+  const r = records.find(x => x.id === id);
+  const holderName = r ? r.name : id;
+  Swal.fire({
+    title: 'Approve Renewal?',
+    text: `Extend ${holderName}'s ID expiry by 1 year.`,
+    icon: 'question', showCancelButton: true,
+    confirmButtonColor: '#16a34a', confirmButtonText: 'Approve'
+  }).then(res => {
+    if (!res.isConfirmed) return;
+
+    // 1. Extend expiry in the live records array
+    if (r) {
+      const d = new Date(r.expires || new Date());
+      if (isNaN(d)) d.setTime(Date.now());
+      d.setFullYear(d.getFullYear() + 1);
+      r.expires = d.toISOString().split('T')[0];
+    }
+
+    // 2. Persist the new expiry back into id_submissions
+    const subs = LS.get('id_submissions') || [];
+    const sub  = subs.find(s => s.id === id);
+    if (sub) {
+      const base = new Date(r ? r.expires : new Date());
+      sub.expires = r ? r.expires : base.toISOString().split('T')[0];
+      sub.renewalApprovedAt = new Date().toLocaleString('en-PH');
+    }
+    LS.set('id_submissions', subs);
+
+    // 3. Mark the renewal request as Approved
+    const requests = LS.get('id_renewal_requests') || [];
+    const req = requests.find(x => x.id === id);
+    if (req) { req.status = 'Approved'; req.approvedAt = new Date().toLocaleString('en-PH'); }
+    LS.set('id_renewal_requests', requests);
+
+    pushActivity('#22c55e', `Renewal approved for <b>${holderName}</b> — new expiry: ${r ? r.expires : '—'}`, 'just now');
+    refresh();
+    renderRenewals();
+    Swal.fire({ icon: 'success', title: 'Renewal Approved!', text: `New expiry: ${r ? r.expires : '—'}`, timer: 2200, showConfirmButton: false });
+  });
+}
+
+function rejectRenewal(id, username) {
+  Swal.fire({
+    title: 'Reject Renewal Request',
+    input: 'textarea',
+    inputLabel: 'Reason for rejection',
+    inputPlaceholder: 'e.g. Documents incomplete, invalid request…',
+    inputAttributes: { rows: 3 },
+    showCancelButton: true,
+    confirmButtonColor: '#dc2626', confirmButtonText: 'Reject',
+    inputValidator: v => { if (!v.trim()) return 'Please provide a reason.'; }
+  }).then(res => {
+    if (!res.isConfirmed) return;
+    const requests = LS.get('id_renewal_requests') || [];
+    const req = requests.find(r => r.id === id);
+    if (req) { req.status = 'Rejected'; req.rejectedReason = res.value.trim(); req.rejectedAt = new Date().toLocaleString('en-PH'); }
+    LS.set('id_renewal_requests', requests);
+    pushActivity('#ef4444', `Renewal rejected for ID <b>${id}</b>`, 'just now');
+    renderRenewals();
+    Swal.fire({ icon: 'info', title: 'Request Rejected', timer: 1800, showConfirmButton: false });
+  });
+}
+
+// ── RENEWAL DECISION DETAIL POPUP ────────────────────────────────
+function showRenewalDecisionDetail(id, decision) {
+  const requests = LS.get('id_renewal_requests') || [];
+  const req = requests.find(r => r.id === id);
+  if (!req) return;
+
+  if (decision === 'Approved') {
+    Swal.fire({
+      icon: 'success',
+      title: '<span style="font-size:18px;">✅ Renewal Approved</span>',
+      html: `
+        <div style="text-align:left;font-size:13px;line-height:1.8;">
+          <div style="display:flex;justify-content:space-between;border-bottom:1px solid #e2e8f0;padding:6px 0;">
+            <span style="color:#64748b;font-weight:600;">Applicant</span>
+            <span style="font-weight:500;">${req.name || '—'}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;border-bottom:1px solid #e2e8f0;padding:6px 0;">
+            <span style="color:#64748b;font-weight:600;">ID Number</span>
+            <span style="font-family:monospace;color:#64748b;">${req.id}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;border-bottom:1px solid #e2e8f0;padding:6px 0;">
+            <span style="color:#64748b;font-weight:600;">Requested On</span>
+            <span>${req.requestedAt || '—'}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:6px 0;">
+            <span style="color:#64748b;font-weight:600;">Approved On</span>
+            <span style="color:#16a34a;font-weight:600;">${req.approvedAt || '—'}</span>
+          </div>
+        </div>
+        <div style="margin-top:14px;background:#dcfce7;border:1px solid #a8ddb5;border-radius:10px;padding:12px 16px;font-size:13px;color:#15803d;font-weight:600;">
+          <i class="fa fa-circle-check me-2"></i>This renewal has been approved. The ID expiry has been extended by 1 year.
+        </div>`,
+      confirmButtonColor: '#16a34a',
+      confirmButtonText: 'Close',
+      customClass: { popup: 'swal2-renewal-detail' }
+    });
+  } else {
+    Swal.fire({
+      icon: 'error',
+      title: '<span style="font-size:18px;">❌ Renewal Rejected</span>',
+      html: `
+        <div style="text-align:left;font-size:13px;line-height:1.8;">
+          <div style="display:flex;justify-content:space-between;border-bottom:1px solid #e2e8f0;padding:6px 0;">
+            <span style="color:#64748b;font-weight:600;">Applicant</span>
+            <span style="font-weight:500;">${req.name || '—'}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;border-bottom:1px solid #e2e8f0;padding:6px 0;">
+            <span style="color:#64748b;font-weight:600;">ID Number</span>
+            <span style="font-family:monospace;color:#64748b;">${req.id}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;border-bottom:1px solid #e2e8f0;padding:6px 0;">
+            <span style="color:#64748b;font-weight:600;">Requested On</span>
+            <span>${req.requestedAt || '—'}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:6px 0;">
+            <span style="color:#64748b;font-weight:600;">Rejected On</span>
+            <span style="color:#dc2626;font-weight:600;">${req.rejectedAt || '—'}</span>
+          </div>
+        </div>
+        ${req.rejectedReason ? `<div style="margin-top:14px;background:#fee2e2;border:1px solid #f5a5a0;border-radius:10px;padding:12px 16px;font-size:13px;color:#991b1b;">
+          <div style="font-weight:700;margin-bottom:4px;"><i class="fa fa-comment-dots me-2"></i>Reason for Rejection</div>
+          <div>${req.rejectedReason}</div>
+        </div>` : ''}`,
+      confirmButtonColor: '#dc2626',
+      confirmButtonText: 'Close',
+      customClass: { popup: 'swal2-renewal-detail' }
+    });
+  }
+}
+
+// ── REVOCATIONS VIEW ──────────────────────────────────────────────
+function renderRevocations() {
+  const list = records.filter(r=>r.status==='Revoked'||r.status==='Rejected');
+  if (!list.length) {
+    $('#revocations-list').html('<div class="text-center py-5 text-muted"><i class="fa-solid fa-ban fa-2x mb-2 d-block"></i><small>No revoked or rejected IDs.</small></div>');
+    return;
+  }
+  $('#revocations-list').html(`<div class="table-responsive"><table class="table table-sm table-hover w-100"><thead><tr><th>Holder</th><th>ID</th><th>Status</th><th>Reason</th><th>Actions</th></tr></thead><tbody>${
+    list.map(r=>`<tr>
+      <td><div class="d-flex align-items-center gap-2">${avatarHTML(r.name)}<span>${r.name}</span></div></td>
+      <td><span class="id-code">${r.id}</span></td>
+      <td>${statusBadge(r.status)}</td>
+      <td style="font-size:11px;color:var(--muted);max-width:180px">${r.rejectedReason||'—'}</td>
+      <td><button class="btn btn-success btn-sm py-0" onclick="activateDirect('${r.id}');renderRevocations();"><i class="fa fa-circle-check fa-xs me-1"></i>Re-activate</button></td>
+    </tr>`).join('')
+  }</tbody></table></div>`);
+}
+
+// ── ACCESS CONTROL VIEW ───────────────────────────────────────────
+function renderAccessControl() {
+  const levels = ['Level 1 — Basic','Level 2 — Standard','Level 3 — Elevated','Level 4 — Admin'];
+  const colors = ['#64748b','#2563eb','#7c3aed','#dc2626'];
+  $('#access-levels-list').html(levels.map((l,i)=>{
+    const count = records.filter(r=>r.level===l&&r.status==='Active').length;
+    return `<div class="detail-row"><span class="detail-key"><span style="color:${colors[i]};font-weight:600">${l}</span></span><span class="detail-val">${count} active holder${count!==1?'s':''}</span></div>`;
+  }).join(''));
+  const session = LS.get('id_session');
+  $('#admin-session-info').html(session
+    ? `<div class="detail-row"><span class="detail-key">Logged in as</span><span class="detail-val">${session.name||session.username}</span></div>
+       <div class="detail-row"><span class="detail-key">Type</span><span class="detail-val">${session.type}</span></div>`
+    : '<div class="text-muted" style="font-size:13px">No active session.</div>');
+}
+
+// ── SETTINGS VIEW ─────────────────────────────────────────────────
+function renderSettings() {
+  const session = LS.get('id_session') || {};
+  $('#settings-admin-name').val(session.name || '');
+  $('#settings-admin-username').val(session.username || '');
+}
+
+function saveAdminSettings() {
+  const name = $('#settings-admin-name').val().trim();
+  const username = $('#settings-admin-username').val().trim();
+  if (!name) { Swal.fire({icon:'warning',title:'Name required',confirmButtonColor:'#2563eb'}); return; }
+  const session = LS.get('id_session') || { type:'admin' };
+  session.name = name; session.username = username;
+  LS.set('id_session', session);
+  $('#adminAvatar').text(initials(name));
+  $('#adminNameLabel').text(name);
+  $('#sidebarAdminName').text(name);
+  Swal.fire({ icon:'success', title:'Profile saved!', timer:1500, showConfirmButton:false });
+}
+
+function clearManualRecords() {
+  Swal.fire({ title:'Clear manual records?', text:'All manually issued IDs will be deleted.', icon:'warning', showCancelButton:true, confirmButtonColor:'#dc2626', confirmButtonText:'Clear' }).then(r => {
+    if (r.isConfirmed) {
+      LS.set('id_manual_records', []);
+      records = loadAllRecords();
+      refresh();
+      Swal.fire({ icon:'success', title:'Manual records cleared', timer:1500, showConfirmButton:false });
+    }
+  });
+}
+
+function clearSubmissions() {
+  Swal.fire({ title:'Clear all submissions?', text:'All application submissions will be removed.', icon:'warning', showCancelButton:true, confirmButtonColor:'#dc2626', confirmButtonText:'Clear' }).then(r => {
+    if (r.isConfirmed) {
+      LS.set('id_submissions', []);
+      records = loadAllRecords();
+      refresh();
+      Swal.fire({ icon:'success', title:'Submissions cleared', timer:1500, showConfirmButton:false });
+    }
+  });
+}
+
+function exportAllData() {
+  const data = JSON.stringify({ records, activity }, null, 2);
+  const blob = new Blob([data], { type:'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='id-registry-export.json'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── REPORTS VIEW ──────────────────────────────────────────────────
+function renderReports() {
+  const total   = records.length;
+  const active  = records.filter(r=>r.status==='Active').length;
+  const pending = records.filter(r=>r.status==='Pending').length;
+  const expired = records.filter(r=>r.status==='Expired'||r.status==='Revoked'||r.status==='Rejected').length;
+
+  const statsCards = [
+    { label:'Total Records', val:total, icon:'fa-id-card-clip', bg:'#eff6ff', c:'#2563eb' },
+    { label:'Active IDs',    val:active, icon:'fa-circle-check', bg:'#dcfce7', c:'#16a34a' },
+    { label:'Pending',       val:pending, icon:'fa-hourglass-half', bg:'#fef3c7', c:'#d97706' },
+    { label:'Inactive',      val:expired, icon:'fa-ban', bg:'#fee2e2', c:'#dc2626' },
+  ];
+  $('#report-stats-row').html(statsCards.map(s =>
+    `<div class="col-6 col-md-3">
+      <div class="metric-card">
+        <div><div class="metric-label">${s.label}</div><div class="metric-value" style="color:${s.c}">${s.val}</div></div>
+        <div class="metric-icon" style="background:${s.bg};color:${s.c}"><i class="fa-solid ${s.icon}"></i></div>
+      </div>
+    </div>`
+  ).join(''));
+
+  $('#reportTableBody').html(records.map(r =>
+    `<tr>
+      <td class="id-code">${r.id}</td>
+      <td>${r.name}</td>
+      <td>${r.type}</td>
+      <td style="color:${COLORS_MAP[r.dept]||'#64748b'};font-weight:500">${r.dept}</td>
+      <td>${statusBadge(r.status)}</td>
+      <td>${r.issued}</td>
+      <td>${r.expires}</td>
+    </tr>`
+  ).join(''));
+}
+
+function exportCSV() {
+  const headers = ['ID Number','Name','Type','Department','Status','Issued','Expires'];
+  const rows = records.map(r => [r.id,r.name,r.type,r.dept,r.status,r.issued,r.expires].map(v=>`"${v}"`).join(','));
+  const csv = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob([csv], { type:'text/csv' });
+  const url  = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='id-registry.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+
+(function guardAdmin() {
+  try {
+    const s = JSON.parse(localStorage.getItem('id_session'));
+    if (!s || s.type !== 'admin') {
+      location.href = 'login.html';
+    }
+  } catch(e) {
+    location.href = 'login.html';
+  }
+})();
+
+// ── INIT ──────────────────────────────────────────────────────────
+$(function() {
+  // Populate admin name from session
+  const session = LS.get('id_session');
+  if (session) {
+    const adminName = session.name || session.username || 'Admin';
+    $('#adminAvatar').text(initials(adminName));
+    $('#adminNameLabel').text(adminName);
+    $('#sidebarAdminName').text(adminName);
+  }
+
+  // Surface real pending submissions in activity feed
+  const realPending = (LS.get('id_submissions') || []).filter(s => s.status === 'pending').length;
+  if (realPending > 0) {
+    activity.unshift({
+      color: '#f59e0b',
+      text: `<b>${realPending}</b> new application${realPending > 1 ? 's' : ''} awaiting review`,
+      time: 'just now'
+    });
+    $('#pending-nav-badge').text(realPending).show();
+  }
+
+  // Update pending badge count
+  function updatePendingBadge() {
+    const cnt = records.filter(r=>r.status==='Pending').length;
+    if (cnt > 0) $('#pending-nav-badge').text(cnt).show();
+    else $('#pending-nav-badge').hide();
+  }
+  function updateRenewalsBadge() {
+    const cnt = (LS.get('id_renewal_requests') || []).filter(r => r.status === 'Pending').length;
+    if (cnt > 0) $('#renewals-nav-badge').text(cnt).show();
+    else $('#renewals-nav-badge').hide();
+  }
+
+  updatePendingBadge();
+  updateAppBadge();
+  updateRenewalsBadge();
+
+  updateMetrics();
+  buildTable();
+  renderActivity();
+  renderCalendar();
+  buildCharts();
+
+  // ── Auto-poll for new submissions every 15 seconds ──
+  setInterval(() => {
+    const prevCount = records.filter(r => r.status === 'Pending').length;
+    records = loadAllRecords();
+    const newCount = records.filter(r => r.status === 'Pending').length;
+    if (newCount > prevCount) {
+      pushActivity('#f59e0b', `<b>${newCount - prevCount}</b> new application${newCount - prevCount > 1 ? 's' : ''} received`, 'just now');
+    }
+    updateMetrics();
+    updateAppBadge();
+    updateRenewalsBadge();
+  }, 15000);
+});
+</script>
+</body>
+</html>

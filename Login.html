@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>National ID System — Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/css/bootstrap.min.css" integrity="sha512-2bBQCjcnw658Lho4nlXJcc6WkV/UxpE/sAokbXPxQNGqmNdQrWqtw26Ns9kFF/yG792pKR1Sx8/Y1Lf1XN4GKA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <!-- jQuery (load BEFORE Bootstrap JS) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <!-- SweetAlert2 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+
+  <style>
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --white:#ffffff; --yellow:#e8b840; --blue:#3a8fc7;
+      --blue-dark:#2e7db5; --blue-deep:#163d6b;
+      --ink:#1a2d40; --muted:#5a7a94; --bg:#e8f0f5;
+      --border:#c5d8e8; --field-bg:#e4eef5;
+    }
+    body { font-family:'DM Sans',sans-serif; background:var(--bg); min-height:100vh; display:flex; flex-direction:column; align-items:center; }
+
+    /* ── HERO (unchanged) ── */
+    .hero {
+      width:100%;
+      background:linear-gradient(135deg,#0d2a4a 0%,#163d6b 100%);
+      padding:38px 28px 44px; position:relative; overflow:hidden;
+      display:flex; flex-direction:column; align-items:flex-start;
+    }
+    .hero-border { position:absolute; bottom:0; left:0; right:0; height:4px; background:var(--yellow); }
+    .hero-badge { position:relative; z-index:2; display:inline-flex; align-items:center; gap:7px; background:rgba(255,255,255,0.13); border:1px solid rgba(255,255,255,0.28); color:#fff; font-size:10px; font-weight:600; letter-spacing:2.5px; text-transform:uppercase; padding:6px 14px; border-radius:20px; margin-bottom:18px; }
+    .hero-badge-dot { width:6px; height:6px; background:var(--yellow); border-radius:50%; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(.65);} }
+    .hero h1 { position:relative; z-index:2; font-family:'Playfair Display', serif; font-weight:700; font-size:clamp(32px,6vw,48px); color:var(--white); line-height:1.05; letter-spacing:-0.5px; }
+    .hero h1 span { color:var(--yellow); display:block; }
+    .hero p { position:relative; z-index:2; margin-top:14px; color:rgba(255,255,255,0.72); font-size:13.5px; line-height:1.65; max-width:340px; }
+
+    /* ── BOOTSTRAP: Card override ── */
+    .card {
+      width:100%; max-width:660px;
+      background:var(--white);
+      border-radius:0 0 20px 20px !important;
+      border:none !important;
+      box-shadow:0 8px 32px rgba(26,45,64,0.10);
+      min-height:520px;
+    }
+    .card-body { padding:28px 28px 36px; }
+    @media (min-width:680px) {
+      body{align-items:center;}
+      .hero{max-width:660px;border-radius:20px 20px 0 0;margin-top:32px;}
+    }
+
+    /* ── BOOTSTRAP: Nav Pills override (primary User/Admin tabs) ── */
+    .nav-pills {
+      background:#d6eaf8;
+      border-radius:12px;
+      padding:5px;
+      gap:5px;
+      margin-bottom:22px;
+      flex-wrap:nowrap;
+    }
+    .nav-pills .nav-item { flex:1; }
+    .nav-pills .nav-link {
+      width:100%;
+      border-radius:9px;
+      font-family:'DM Sans',sans-serif;
+      font-size:13.5px;
+      font-weight:600;
+      color:var(--muted);
+      padding:10px 0;
+      text-align:center;
+      transition:all .22s;
+      background:transparent;
+      border:none;
+    }
+    .nav-pills .nav-link:hover:not(.active) { color:var(--blue); background:rgba(27,152,224,.09); }
+    .nav-pills .nav-link.active {
+      background:var(--blue) !important;
+      color:var(--white) !important;
+      box-shadow:0 4px 14px rgba(58,143,199,.32);
+    }
+
+    /* ── BOOTSTRAP: Nav Tabs override (Sign In / Create Account subtabs) ── */
+    .nav-tabs {
+      border-bottom:2px solid #c5d8e8;
+      margin-bottom:24px;
+      flex-wrap:nowrap;
+    }
+    .nav-tabs .nav-item { flex:1; }
+    .nav-tabs .nav-link {
+      width:100%;
+      border:none;
+      border-bottom:2.5px solid transparent;
+      border-radius:0;
+      font-family:'DM Sans',sans-serif;
+      font-size:13.5px;
+      font-weight:600;
+      color:var(--muted);
+      padding:9px 0;
+      text-align:center;
+      margin-bottom:-2px;
+      transition:all .2s;
+      background:transparent;
+    }
+    .nav-tabs .nav-link:hover:not(.active) { color:var(--blue); border-bottom-color:transparent; background:transparent; }
+    .nav-tabs .nav-link.active {
+      color:var(--blue) !important;
+      border-bottom-color:var(--blue) !important;
+      background:transparent !important;
+    }
+
+    .sec { display:none; overflow:hidden; } .sec.active { display:block; }
+    .sec.active > .sec { display:none; } .sec.active > .sec.active { display:block; }
+
+    .form-heading { margin-bottom:20px; }
+    .form-heading h2 { font-family:'Playfair Display', serif; font-weight:700; font-size:22px; color:var(--ink); letter-spacing:-.3px; }
+    .form-heading p  { margin-top:4px; font-size:12.5px; color:var(--muted); line-height:1.5; }
+
+    .field { margin-bottom:14px; }
+    .field label { display:block; font-size:10.5px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--ink); margin-bottom:7px; }
+    .input-wrap { position:relative; }
+    .input-wrap input, .input-wrap select { width:100%; padding:12px 14px; border:1.5px solid var(--border); border-radius:10px; font-family:'DM Sans',sans-serif; font-size:14px; color:var(--ink); background:var(--field-bg); outline:none; transition:border-color .2s,box-shadow .2s,background .2s; }
+    .input-wrap input:focus, .input-wrap select:focus { border-color:var(--blue); background:var(--white); box-shadow:0 0 0 3px rgba(27,152,224,.11); }
+    .input-wrap select { appearance:none; cursor:pointer; }
+    .select-caret { position:absolute; right:14px; top:50%; transform:translateY(-50%); color:var(--muted); font-size:11px; pointer-events:none; }
+
+    .field-grid { display:grid; grid-template-columns:1fr 1fr; gap:0 14px; }
+
+    /* ── BOOTSTRAP: Progress override (password strength) ── */
+    .progress {
+      height:4px;
+      background:#c5d8e8;
+      border-radius:4px;
+      margin-top:6px;
+    }
+    .progress-bar { border-radius:4px; transition:width .3s, background-color .3s; }
+
+    .field-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; }
+    .checkbox-wrap { display:flex; align-items:center; gap:8px; cursor:pointer; }
+    .checkbox-wrap input[type="checkbox"] { width:15px; height:15px; accent-color:var(--blue); cursor:pointer; }
+    .checkbox-wrap span { font-size:13px; color:var(--muted); }
+    .link { font-size:13px; color:var(--blue); text-decoration:none; font-weight:600; }
+    .link:hover { text-decoration:underline; }
+
+    /* ── BOOTSTRAP: Button override (btn-cta) ── */
+    .btn-cta {
+      width:100%; padding:13.5px;
+      border:none; border-radius:11px;
+      background:linear-gradient(135deg,var(--blue) 0%,var(--blue-dark) 100%);
+      color:var(--white);
+      font-family:'DM Sans',sans-serif;
+      font-size:15px; font-weight:700; letter-spacing:.3px;
+      cursor:pointer;
+      transition:transform .15s,box-shadow .15s;
+      box-shadow:0 6px 20px rgba(58,143,199,.36);
+      position:relative; overflow:hidden;
+    }
+    .btn-cta::after { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(255,195,0,.18) 0%,transparent 60%); opacity:0; transition:opacity .2s; }
+    .btn-cta:hover { transform:translateY(-2px); box-shadow:0 10px 26px rgba(58,143,199,.44); color:var(--white); }
+    .btn-cta:hover::after { opacity:1; }
+    .btn-cta:active { transform:translateY(0); }
+
+    .admin-banner { display:flex; align-items:center; gap:11px; background:linear-gradient(135deg,#fff9e0,#fffcee); border:1.5px solid rgba(255,195,0,.45); border-radius:10px; padding:12px 15px; margin-bottom:14px; }
+    .admin-banner-icon { width:34px; height:34px; background:var(--yellow); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+    .admin-banner-text strong { display:block; font-size:12.5px; color:var(--ink); font-weight:700; }
+    .admin-banner-text span   { font-size:11px; color:#7a5f00; }
+
+    .hint-box { background:#e4eef5; border:1px solid #c5d8e8; border-radius:10px; padding:10px 14px; font-size:12px; color:#1a2d40; margin-bottom:16px; line-height:1.6; }
+    .hint-box strong { color:#3a8fc7; }
+
+    /* ── BOOTSTRAP: Alert override (custom show/hide kept for JS compatibility) ── */
+    .alert { display:none !important; align-items:center; gap:8px; border-radius:9px; padding:10px 14px; font-size:13px; margin-bottom:14px; line-height:1.4; }
+    .alert.show { display:flex !important; }
+    .alert-error   { background:#fff1f1; border:1px solid #ffc0c0; color:#c0392b; }
+    .alert-success { background:#edfbf4; border:1px solid #9de4ba; color:#1a7a45; }
+
+    .divider { display:flex; align-items:center; gap:12px; margin:18px 0; color:#5a7a94; font-size:12px; }
+    .divider::before,.divider::after { content:''; flex:1; height:1px; background:#c5d8e8; }
+    .switch-note { text-align:center; font-size:13px; color:var(--muted); margin-top:14px; }
+    .page-footer { font-size:11px; color:#5a7a94; text-align:center; padding:20px 0 28px; letter-spacing:.5px; }
+
+    @media (max-width:680px) { .field-grid{grid-template-columns:1fr;gap:0;} .hero{border-radius:0;margin-top:0;} .card{border-radius:0 !important;} }
+  </style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="dot-grid"></div>
+  <div class="hero-badge"><span class="hero-badge-dot"></span> San Mateo, Rizal</div>
+  <h1><span>Identification System</span></h1>
+  <p>Secure digital identity management for residents of San Mateo, Rizal. Powered by the local government unit.</p>
+  <div class="hero-border"></div>
+</div>
+
+<!-- BOOTSTRAP: Card -->
+<div class="card">
+  <div class="card-body">
+
+    
+
+    <!-- ══ USER ══ -->
+    <div class="sec active" id="sec-user">
+
+      <!-- BOOTSTRAP: Nav Tabs (Sign In / Create Account) -->
+      <ul class="nav nav-tabs" id="userSubTabs">
+        <li class="nav-item">
+          <button class="nav-link active" id="stab-user-login" onclick="switchSub('user','login')">Sign In</button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" id="stab-user-signup" onclick="switchSub('user','signup')">Create Account</button>
+        </li>
+      </ul>
+
+      <!-- User Sign In -->
+      <div class="sec active" id="sec-user-login">
+        <div class="form-heading"><h2>Welcome back</h2><p>Sign in to access your ID application portal.</p></div>
+
+        <!-- BOOTSTRAP: Alert (error) -->
+        <div class="alert alert-error" id="a-ul" role="alert"></div>
+
+        <div class="field">
+          <label>Username</label>
+          <div class="input-wrap"><input type="text" id="ul-u" placeholder="Enter your username" autocomplete="username"/></div>
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <div class="input-wrap"><input type="password" id="ul-p" placeholder="Enter your password" autocomplete="current-password"/></div>
+        </div>
+        <div class="field-row">
+          <label class="checkbox-wrap"><input type="checkbox"/> <span>Remember me</span></label>
+          <a href="#" class="link" onclick="forgotPassword();return false;">Forgot password?</a>
+        </div>
+
+        <!-- BOOTSTRAP: Button -->
+        <button class="btn btn-cta" onclick="doLogin()">Sign In</button>
+
+        <div class="divider">or</div>
+        <p class="switch-note">No account yet? <a href="#" class="link" onclick="switchSub('user','signup');return false">Create one →</a></p>
+      </div>
+
+      <!-- User Sign Up / create account -->
+      <div class="sec" id="sec-user-signup">
+        <div class="form-heading"><h2>Create Account</h2><p>Register as a resident to request your national ID.</p></div>
+
+        <!-- BOOTSTRAP: Alert (error) -->
+        <div class="alert alert-error"   id="a-us-err" role="alert"></div>
+        <!-- BOOTSTRAP: Alert (success) -->
+        <div class="alert alert-success" id="a-us-ok"  role="alert"></div>
+
+        <div class="field-grid">
+          <div class="field"><label>First Name</label><div class="input-wrap"><input type="text" id="us-fn" placeholder="Juan"/></div></div>
+          <div class="field"><label>Last Name</label><div class="input-wrap"><input type="text" id="us-ln" placeholder="dela Cruz"/></div></div>
+        </div>
+        <div class="field"><label>Address</label><div class="input-wrap"><input type="text" id="us-ad" placeholder="Complete Address"></div></div>
+        <div class="field"><label>Birthdate</label><div class="input-wrap"><input type="date" id="us-bd" placeholder="mm/dd/yyyy"></div></div>
+        <div class="field"><label>Email Address</label><div class="input-wrap"><input type="email" id="us-em" placeholder="juan@example.com"/></div></div>
+        <div class="field">
+          <label>Mobile Number</label>
+          <div class="input-wrap"><input type="tel" id="us-mb" placeholder="09XXXXXXXXX" maxlength="11" oninput="validateMobile(this)"/></div>
+          <span id="err-mb-letters" style="display:none;font-size:11px;color:#e03030;font-weight:500;margin-top:4px;">Letters and special characters are not allowed</span>
+          <span id="err-mb-limit"   style="display:none;font-size:11px;color:#e03030;font-weight:500;margin-top:4px;">Mobile number must be exactly 10 digits after the prefix (e.g. 09XXXXXXXXX)</span>
+        </div>
+        <div class="field"><label>Username</label><div class="input-wrap"><input type="text" id="us-un" placeholder="Choose a username"/></div></div>
+        <div class="field-grid">
+          <div class="field"> 
+            <label>Password</label>
+            <div class="input-wrap"><input type="password" id="us-pw" placeholder="Create password" oninput="strength(this,'us-bar')"/></div>
+            <!-- BOOTSTRAP: Progress (password strength bar) -->
+            <div class="progress">
+              <div class="progress-bar" id="us-bar" role="progressbar" style="width:0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+          </div>
+          <div class="field"><label>Confirm Password</label><div class="input-wrap"><input type="password" id="us-cp" placeholder="Repeat password"/></div></div>
+        </div>
+
+        <!-- BOOTSTRAP: Button -->
+        <button class="btn btn-cta" onclick="doSignup()">Create Account</button>
+        <p class="switch-note">Already have an account? <a href="#" class="link" onclick="switchSub('user','login');return false">Sign in →</a></p>
+      </div>
+    </div>
+
+
+
+  </div><!-- end card-body -->
+</div><!-- end card -->
+
+<p class="page-footer">© 2025 San Mateo LGU · National ID System · All rights reserved</p>
+
+<script>
+  /* ══════════════════════════════════════════
+     STORAGE HELPERS
+  ══════════════════════════════════════════ */
+  const LS = {
+    get(k)    { try { return JSON.parse(localStorage.getItem(k)); } catch(e) { return null; } },
+    set(k, v) { localStorage.setItem(k, JSON.stringify(v)); },
+    users()   { return LS.get('id_users')   || []; },
+    admins()  { return LS.get('id_admins')  || []; },
+    subs()    { return LS.get('id_submissions') || []; },
+  };
+
+  /* Seed a default admin account */
+  (function seedAdmin() {
+    const admins = LS.admins();
+    if (!admins.find(a => a.username === 'admin')) {
+      admins.push({ username:'admin', password:'admin123', firstName:'System', lastName:'Admin', role:'superadmin', dept:'it', email:'admin@sanmateo.gov.ph' });
+      LS.set('id_admins', admins);
+    }
+  })();
+
+  /* ── Redirect if already logged in ── */
+  (function checkSession() {
+    const s = LS.get('id_session');
+    if (!s) return;
+    if (s.type === 'admin') { location.href = 'id-admin.html'; return; }
+    if (s.type === 'user') {
+      const approved = LS.subs().find(sub => sub.username === s.username && sub.status === 'approved');
+      location.href = approved ? 'id-card.html' : 'id-application.html';
+    }
+  })();
+
+  /* ══════════════════════════════════════════
+     TAB SWITCHERS  — converted to jQuery
+  ══════════════════════════════════════════ */
+  function switchSub(p, s) {
+    ['login', 'signup'].forEach(x => {
+      // jQuery: toggleClass replaces classList.toggle
+      $('#stab-' + p + '-' + x).toggleClass('active', x === s);
+      $('#sec-'  + p + '-' + x).toggleClass('active', x === s);
+    });
+    clearAlerts();
+  }
+
+  function clearAlerts() {
+    // jQuery: $('.alert') replaces document.querySelectorAll('.alert')
+    //         .removeClass replaces .classList.remove
+    $('.alert').removeClass('show');
+  }
+
+  function showAlert(id, msg, type) {
+    // jQuery: $('#id') replaces document.getElementById(id)
+    //         .text()  replaces .textContent
+    //         .attr('class', ...) replaces .className = ...
+    $('#' + id)
+      .text(msg)
+      .attr('class', 'alert show ' + (type === 'success' ? 'alert-success' : 'alert-error'));
+  }
+
+  function strength(input, barId) {
+    const v = input.value;
+    // jQuery: $('#barId') replaces document.getElementById(barId)
+    //         .css()      replaces .style
+    let s = 0;
+    if (v.length >= 8) s++; if (/[A-Z]/.test(v)) s++; if (/[0-9]/.test(v)) s++; if (/[^A-Za-z0-9]/.test(v)) s++;
+    $('#' + barId).css({
+      width:      s ? ['25%','50%','75%','100%'][s - 1] : '0',
+      background: s ? ['#e74c3c','#e67e22','#f1c40f','#2ecc71'][s - 1] : 'transparent'
+    });
+  }
+
+  /* ── Mobile number validation ── */
+  function validateMobile(input) {
+    const raw   = input.value;
+    const clean = raw.replace(/[^0-9]/g, '');
+
+    // Show letters-not-allowed error if input had non-numeric characters
+    if (raw !== clean) {
+      $('#err-mb-letters').show();
+    } else {
+      $('#err-mb-letters').hide();
+    }
+
+    // Enforce digits only and cap at 11 characters (e.g. 09XXXXXXXXX)
+    input.value = clean.slice(0, 11);
+
+    // Show limit error if user has typed enough to evaluate (>= 4 chars) but total isn't 11
+    if (input.value.length > 0 && input.value.length < 11) {
+      $('#err-mb-limit').show();
+    } else {
+      $('#err-mb-limit').hide();
+    }
+  }
+
+  /* 
+     LOGIN  — converted to jQuery
+  */
+  function doLogin() {
+      const u = $('#ul-u').val().trim();
+      const p = $('#ul-p').val().trim();
+      if (!u || !p) { showAlert('a-ul', 'Please fill in all fields.', 'error'); return; }
+      const user = LS.users().find(x => x.username === u && x.password === p);
+      if (!user) { showAlert('a-ul', 'Incorrect username or password.', 'error'); return; }
+      LS.set('id_session', { type:'user', username:u, name: user.firstName + ' ' + user.lastName });
+      const approved = LS.subs().find(s => s.username === u && s.status === 'approved');
+      location.href = approved ? 'id-card.html' : 'id-application.html';
+  }
+
+  /* ══════════════════════════════════════════
+     SIGN UP  — converted to jQuery
+  ══════════════════════════════════════════ */
+  function doSignup() {
+      const fn = $('#us-fn').val().trim();
+      const ln = $('#us-ln').val().trim();
+      const ad = $('#us-ad').val().trim();
+      const bd = $('#us-bd').val().trim();
+      const em = $('#us-em').val().trim();
+      const mb = $('#us-mb').val().trim();
+      const un = $('#us-un').val().trim();
+      const pw = $('#us-pw').val();
+      const cp = $('#us-cp').val();
+      if (!fn||!ln||!ad||!bd||!em||!un||!pw||!cp) { showAlert('a-us-err', 'Please complete all required fields.', 'error'); return; }
+      if (pw !== cp)     { showAlert('a-us-err', 'Passwords do not match.', 'error'); return; }
+      if (pw.length < 8) { showAlert('a-us-err', 'Password must be at least 8 characters.', 'error'); return; }
+      const users = LS.users();
+      if (users.find(x => x.username === un)) { showAlert('a-us-err', 'Username already taken.', 'error'); return; }
+      if (users.find(x => x.email    === em)) { showAlert('a-us-err', 'Email already registered.', 'error'); return; }
+      if (mb && !/^\d+$/.test(mb)) { showAlert('a-us-err', 'Mobile number must contain numbers only — no letters or special characters.', 'error'); return; }
+      if (mb && mb.length !== 11)  { showAlert('a-us-err', 'Mobile number must be exactly 11 digits (e.g. 09XXXXXXXXX).', 'error'); return; }
+      const d = new Date($('#us-bd').val());
+      const formattedBD = `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
+      users.push({ username:un, password:pw, firstName:fn, lastName:ln, email:em, mobile:mb, address:ad, birthdate:formattedBD });
+      LS.set('id_users', users);
+      showAlert('a-us-ok', 'Account created! Redirecting to sign in…','success');
+      setTimeout(() => switchSub('user','login'), 1800);
+  }
+  
+
+  /* ══════════════════════════════════════════
+     FORGOT PASSWORD  — SweetAlert2 multi-step
+  ══════════════════════════════════════════ */
+
+  /* Shared SweetAlert2 custom classes */
+  const swalBase = {
+    customClass: {
+      popup:             'fp-popup',
+      title:             'fp-title',
+      htmlContainer:     'fp-html',
+      confirmButton:     'fp-btn-confirm',
+      cancelButton:      'fp-btn-cancel',
+      validationMessage: 'fp-validation',
+    },
+    buttonsStyling: false,
+  };
+
+  /* Inject shared styles once */
+  (function injectFpStyles() {
+    if (document.getElementById('fp-styles')) return;
+    const s = document.createElement('style');
+    s.id = 'fp-styles';
+    s.textContent = `
+      /* ── Popup shell ── */
+      .fp-popup {
+        border-radius: 20px !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        font-family: 'DM Sans', sans-serif !important;
+        box-shadow: 0 24px 60px rgba(22,61,107,.22) !important;
+        max-width: 420px !important;
+        width: 92vw !important;
+      }
+
+      /* ── Coloured header band ── */
+      .fp-popup::before {
+        content: '';
+        display: block;
+        height: 6px;
+        background: linear-gradient(90deg, #3a8fc7 0%, #163d6b 100%);
+      }
+
+      /* ── Icon area override ── */
+      .fp-popup .swal2-icon {
+        margin: 22px auto 4px !important;
+        border: none !important;
+        width: 62px !important; height: 62px !important;
+        background: #e8f4fb !important;
+        border-radius: 50% !important;
+        display: flex !important; align-items: center !important; justify-content: center !important;
+      }
+      .fp-popup .swal2-icon.swal2-question .swal2-icon-content,
+      .fp-popup .swal2-icon.swal2-success .swal2-icon-content,
+      .fp-popup .swal2-icon.swal2-error   .swal2-icon-content  { font-size: 28px !important; }
+      .fp-popup .swal2-icon.swal2-question { color: #3a8fc7 !important; }
+      .fp-popup .swal2-icon.swal2-success  {
+        background: #edfbf4 !important; color: #1a7a45 !important;
+      }
+      .fp-popup .swal2-icon.swal2-success [class^="swal2-success-line"] {
+        background: #1a7a45 !important;
+      }
+      .fp-popup .swal2-icon.swal2-success .swal2-success-ring { border-color: #9de4ba !important; }
+      .fp-popup .swal2-icon.swal2-error   { background: #fff1f1 !important; }
+
+      /* ── Title ── */
+      .fp-title {
+        font-family: 'Playfair Display', serif !important;
+        font-size: 20px !important;
+        font-weight: 700 !important;
+        color: #1a2d40 !important;
+        padding: 8px 28px 0 !important;
+        line-height: 1.2 !important;
+      }
+
+      /* ── HTML body ── */
+      .fp-html { padding: 0 28px !important; }
+
+      /* ── Step label badge ── */
+      .fp-step-badge {
+        display: inline-block;
+        background: #e8f4fb;
+        color: #3a8fc7;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 1.8px;
+        text-transform: uppercase;
+        padding: 3px 10px;
+        border-radius: 20px;
+        margin: 12px 0 6px;
+      }
+
+      /* ── Sub-heading ── */
+      .fp-sub {
+        font-size: 13px;
+        color: #5a7a94;
+        line-height: 1.55;
+        margin-bottom: 18px;
+      }
+
+      /* ── Field wrapper ── */
+      .fp-field { margin-bottom: 14px; text-align: left; }
+      .fp-label {
+        display: block;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+        color: #1a2d40;
+        margin-bottom: 6px;
+      }
+      .fp-input-wrap { position: relative; }
+      .fp-input {
+        width: 100%;
+        padding: 11px 40px 11px 14px;
+        border: 1.5px solid #c5d8e8;
+        border-radius: 10px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 14px;
+        color: #1a2d40;
+        background: #e4eef5;
+        outline: none;
+        transition: border-color .2s, box-shadow .2s, background .2s;
+        box-sizing: border-box;
+      }
+      .fp-input:focus {
+        border-color: #3a8fc7;
+        background: #fff;
+        box-shadow: 0 0 0 3px rgba(58,143,199,.13);
+      }
+      .fp-input-icon {
+        position: absolute;
+        right: 13px; top: 50%;
+        transform: translateY(-50%);
+        color: #5a7a94;
+        font-size: 14px;
+        pointer-events: none;
+      }
+      /* toggle eye — clickable */
+      .fp-eye {
+        position: absolute;
+        right: 13px; top: 50%;
+        transform: translateY(-50%);
+        color: #5a7a94;
+        font-size: 14px;
+        cursor: pointer;
+        background: none; border: none; padding: 0;
+        line-height: 1;
+      }
+      .fp-eye:hover { color: #3a8fc7; }
+
+      /* ── Strength bar ── */
+      .fp-str-wrap { margin-top: 8px; }
+      .fp-str-track {
+        height: 5px;
+        background: #c5d8e8;
+        border-radius: 4px;
+        overflow: hidden;
+      }
+      .fp-str-bar {
+        height: 100%; width: 0;
+        border-radius: 4px;
+        transition: width .3s, background .3s;
+      }
+      .fp-str-label {
+        font-size: 10.5px;
+        color: #5a7a94;
+        margin-top: 4px;
+        font-weight: 600;
+        min-height: 14px;
+      }
+
+      /* ── Match indicator ── */
+      .fp-match {
+        font-size: 11px;
+        font-weight: 600;
+        margin-top: 5px;
+        min-height: 14px;
+        transition: color .2s;
+      }
+      .fp-match.ok  { color: #1a7a45; }
+      .fp-match.bad { color: #c0392b; }
+
+      /* ── Divider ── */
+      .fp-divider {
+        display: flex; align-items: center; gap: 10px;
+        margin: 4px 0 16px;
+        color: #5a7a94; font-size: 11px;
+      }
+      .fp-divider::before, .fp-divider::after {
+        content: ''; flex: 1; height: 1px; background: #c5d8e8;
+      }
+
+      /* ── Validation message ── */
+      .fp-validation {
+        background: #fff1f1 !important;
+        border: 1px solid #ffc0c0 !important;
+        color: #c0392b !important;
+        border-radius: 9px !important;
+        font-size: 12.5px !important;
+        margin: 4px 28px 0 !important;
+        padding: 8px 13px !important;
+      }
+
+      /* ── Button row ── */
+      .fp-popup .swal2-actions {
+        padding: 18px 28px 26px !important;
+        gap: 10px !important;
+        flex-wrap: nowrap !important;
+      }
+      .fp-btn-confirm {
+        flex: 1;
+        padding: 12px 0;
+        border: none; border-radius: 10px;
+        background: linear-gradient(135deg, #3a8fc7 0%, #2e7db5 100%);
+        color: #fff;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 14px; font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 6px 18px rgba(58,143,199,.34);
+        transition: transform .15s, box-shadow .15s;
+      }
+      .fp-btn-confirm:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(58,143,199,.42); }
+      .fp-btn-confirm:active { transform: translateY(0); }
+
+      .fp-btn-cancel {
+        flex: 1;
+        padding: 12px 0;
+        border: 1.5px solid #c5d8e8; border-radius: 10px;
+        background: #fff;
+        color: #5a7a94;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 14px; font-weight: 600;
+        cursor: pointer;
+        transition: background .15s, color .15s;
+      }
+      .fp-btn-cancel:hover { background: #e8f0f5; color: #1a2d40; }
+
+      /* ── User chip (step 2 greeting) ── */
+      .fp-user-chip {
+        display: inline-flex; align-items: center; gap: 8px;
+        background: #e8f4fb; border: 1px solid #b8d8ef;
+        border-radius: 30px; padding: 6px 14px 6px 8px;
+        margin-bottom: 16px;
+      }
+      .fp-user-chip-avatar {
+        width: 28px; height: 28px; border-radius: 50%;
+        background: linear-gradient(135deg, #3a8fc7, #163d6b);
+        color: #fff; font-size: 12px; font-weight: 700;
+        display: flex; align-items: center; justify-content: center;
+      }
+      .fp-user-chip span { font-size: 13px; font-weight: 600; color: #1a2d40; }
+
+      /* ── Success card ── */
+      .fp-success-card {
+        background: linear-gradient(135deg, #edfbf4, #f0fbf6);
+        border: 1px solid #9de4ba;
+        border-radius: 12px;
+        padding: 14px 16px;
+        font-size: 13px;
+        color: #1a7a45;
+        line-height: 1.6;
+        margin-top: 10px;
+        margin-bottom: 4px;
+      }
+    `;
+    document.head.appendChild(s);
+  })();
+
+  async function forgotPassword() {
+
+    /* ─────────────────────────────────────────
+       STEP 1 — Verify identity (username + email)
+    ───────────────────────────────────────── */
+    const { value: identity, isConfirmed: step1Ok } = await Swal.fire({
+      ...swalBase,
+      title: 'Forgot Password?',
+      html: `
+        <p class="fp-step-badge">Step 1 of 2 &nbsp;·&nbsp; Verify Identity</p>
+        <p class="fp-sub">Enter your username and registered email address to continue.</p>
+
+        <div class="fp-field">
+          <label class="fp-label">Username</label>
+          <div class="fp-input-wrap">
+            <input id="fp-un" class="fp-input" type="text" placeholder="Your username" autocomplete="username"/>
+            <span class="fp-input-icon"><i class="fa-solid fa-user"></i></span>
+          </div>
+        </div>
+
+        <div class="fp-field" style="margin-bottom:4px;">
+          <label class="fp-label">Email Address</label>
+          <div class="fp-input-wrap">
+            <input id="fp-em" class="fp-input" type="email" placeholder="you@example.com" autocomplete="email"/>
+            <span class="fp-input-icon"><i class="fa-solid fa-envelope"></i></span>
+          </div>
+        </div>
+      `,
+      icon: 'question',
+      confirmButtonText: 'Verify &nbsp;→',
+      showCancelButton: true,
+      cancelButtonText: 'Cancel',
+      focusConfirm: false,
+      preConfirm: () => {
+        const un = document.getElementById('fp-un').value.trim();
+        const em = document.getElementById('fp-em').value.trim();
+        if (!un)  { Swal.showValidationMessage('⚠️ Please enter your username.'); return false; }
+        if (!em)  { Swal.showValidationMessage('⚠️ Please enter your email address.'); return false; }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) { Swal.showValidationMessage('⚠️ Please enter a valid email address.'); return false; }
+
+        const users = LS.users();
+        const match = users.find(u => u.username === un);
+        if (!match) { Swal.showValidationMessage('⚠️ No account found with that username.'); return false; }
+        if (match.email.toLowerCase() !== em.toLowerCase()) { Swal.showValidationMessage('⚠️ Email does not match our records.'); return false; }
+        return match;
+      }
+    });
+    if (!step1Ok || !identity) return;
+
+    const user = identity;
+
+    /* ─────────────────────────────────────────
+       STEP 2 — Set new password
+    ───────────────────────────────────────── */
+    const strLabels  = ['Weak','Fair','Good','Strong'];
+    const strColors  = ['#e74c3c','#e67e22','#f1c40f','#2ecc71'];
+
+    const { value: result, isConfirmed: step2Ok } = await Swal.fire({
+      ...swalBase,
+      title: 'Reset Password',
+      html: `
+        <p class="fp-step-badge">Step 2 of 2 &nbsp;·&nbsp; New Password</p>
+
+        <div class="fp-user-chip">
+          <div class="fp-user-chip-avatar">${user.firstName.charAt(0).toUpperCase()}${user.lastName.charAt(0).toUpperCase()}</div>
+          <span>${user.firstName} ${user.lastName}</span>
+        </div>
+
+        <div class="fp-field">
+          <label class="fp-label">New Password</label>
+          <div class="fp-input-wrap">
+            <input id="fp-np" class="fp-input" type="password" placeholder="Create a strong password"/>
+            <button type="button" class="fp-eye" id="fp-eye1" onclick="
+              var i=document.getElementById('fp-np');
+              i.type=i.type==='password'?'text':'password';
+              this.innerHTML=i.type==='password'?'<i class=\'fa-solid fa-eye\'></i>':'<i class=\'fa-solid fa-eye-slash\'></i>';
+            "><i class="fa-solid fa-eye"></i></button>
+          </div>
+          <div class="fp-str-wrap">
+            <div class="fp-str-track"><div class="fp-str-bar" id="fp-str-bar"></div></div>
+            <div class="fp-str-label" id="fp-str-lbl"></div>
+          </div>
+        </div>
+
+        <div class="fp-field" style="margin-bottom:4px;">
+          <label class="fp-label">Confirm Password</label>
+          <div class="fp-input-wrap">
+            <input id="fp-cp" class="fp-input" type="password" placeholder="Re-enter your password"/>
+            <button type="button" class="fp-eye" id="fp-eye2" onclick="
+              var i=document.getElementById('fp-cp');
+              i.type=i.type==='password'?'text':'password';
+              this.innerHTML=i.type==='password'?'<i class=\'fa-solid fa-eye\'></i>':'<i class=\'fa-solid fa-eye-slash\'></i>';
+            "><i class="fa-solid fa-eye"></i></button>
+          </div>
+          <div class="fp-match" id="fp-match"></div>
+        </div>
+      `,
+      icon: 'question',
+      confirmButtonText: 'Reset Password',
+      showCancelButton: true,
+      cancelButtonText: '← Back',
+      focusConfirm: false,
+      didOpen: () => {
+        const np  = document.getElementById('fp-np');
+        const cp  = document.getElementById('fp-cp');
+        const bar = document.getElementById('fp-str-bar');
+        const lbl = document.getElementById('fp-str-lbl');
+        const mtc = document.getElementById('fp-match');
+
+        np.addEventListener('input', function() {
+          const v = this.value;
+          let s = 0;
+          if (v.length >= 8) s++; if (/[A-Z]/.test(v)) s++; if (/[0-9]/.test(v)) s++; if (/[^A-Za-z0-9]/.test(v)) s++;
+          bar.style.width      = s ? ['25%','50%','75%','100%'][s-1] : '0';
+          bar.style.background = s ? strColors[s-1] : 'transparent';
+          lbl.textContent      = v.length ? (s ? strLabels[s-1] : '') : '';
+          lbl.style.color      = s ? strColors[s-1] : '#5a7a94';
+          updateMatch();
+        });
+
+        cp.addEventListener('input', updateMatch);
+
+        function updateMatch() {
+          const nv = np.value, cv = cp.value;
+          if (!cv) { mtc.textContent = ''; mtc.className = 'fp-match'; return; }
+          if (nv === cv) { mtc.textContent = '✓ Passwords match'; mtc.className = 'fp-match ok'; }
+          else           { mtc.textContent = '✗ Passwords do not match'; mtc.className = 'fp-match bad'; }
+        }
+
+        np.focus();
+      },
+      preConfirm: () => {
+        const np = document.getElementById('fp-np').value;
+        const cp = document.getElementById('fp-cp').value;
+        if (!np || !cp)    { Swal.showValidationMessage('⚠️ Please fill in both fields.'); return false; }
+        if (np.length < 8) { Swal.showValidationMessage('⚠️ Password must be at least 8 characters.'); return false; }
+        if (np !== cp)     { Swal.showValidationMessage('⚠️ Passwords do not match.'); return false; }
+        return { newPass: np };
+      }
+    });
+
+    if (!step2Ok || !result) {
+      // Back → re-open step 1
+      forgotPassword(); return;
+    }
+
+    /* ── Save new password ── */
+    const updatedUsers = LS.users().map(u =>
+      u.username === user.username ? { ...u, password: result.newPass } : u
+    );
+    LS.set('id_users', updatedUsers);
+
+    /* ─────────────────────────────────────────
+       SUCCESS dialog
+    ───────────────────────────────────────── */
+    await Swal.fire({
+      ...swalBase,
+      title: 'Password Updated!',
+      html: `
+        <div class="fp-success-card">
+          <strong>✓ Your password has been reset successfully.</strong><br>
+          You can now sign in using your new password.
+        </div>
+      `,
+      icon: 'success',
+      confirmButtonText: 'Sign In Now',
+      showCancelButton: false,
+    });
+
+    /* Pre-fill username and focus password */
+    $('#ul-u').val(user.username);
+    $('#ul-p').val('').focus();
+  }
+
+  /* ── Keydown: Enter to submit  — converted to jQuery ── */
+  // jQuery: $(document).on('keydown', ...) replaces document.addEventListener('keydown', ...)
+  //         .hasClass() replaces .classList.contains()
+  $(document).on('keydown', function(e) {
+    if (e.key !== 'Enter') return;
+    $('#sec-user-login').hasClass('active') ? doLogin() : doSignup();
+  });
+
+  /* BOOTSTRAP: Initialize Tooltips  — converted to jQuery */
+  // jQuery: $(document).ready() replaces document.addEventListener('DOMContentLoaded', ...)
+  $(document).ready(function() {
+    $('[data-bs-toggle="tooltip"]').each(function() {
+      new bootstrap.Tooltip(this);
+    });
+  });
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/js/bootstrap.min.js" integrity="sha512-nKXmKvJyiGQy343jatQlzDprflyB5c+tKCzGP3Uq67v+lmzfnZUi/ZT+fc6ITZfSC5HhaBKUIvr/nTLCV+7F+Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/js/fontawesome.min.js" integrity="sha512-obFNtQ1JKCrxPBPLmYDUevlriATl5EhvwU3CFtdW/HKOkeAe0bbsyZfHO44/f1QyndrZJ464TQvrRP9ZjyXSSA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</body>
+
+</html>

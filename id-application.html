@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ID Application — Municipality of San Mateo</title>
+
+
+
+  
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/css/bootstrap.min.css" integrity="sha512-2bBQCjcnw658Lho4nlXJcc6WkV/UxpE/sAokbXPxQNGqmNdQrWqtw26Ns9kFF/yG792pKR1Sx8/Y1Lf1XN4GKA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/js/bootstrap.min.js" integrity="sha512-nKXmKvJyiGQy343jatQlzDprflyB5c+tKCzGP3Uq67v+lmzfnZUi/ZT+fc6ITZfSC5HhaBKUIvr/nTLCV+7F+Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/js/fontawesome.min.js" integrity="sha512-obFNtQ1JKCrxPBPLmYDUevlriATl5EhvwU3CFtdW/HKOkeAe0bbsyZfHO44/f1QyndrZJ464TQvrRP9ZjyXSSA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #e8f0f5; font-family: 'DM Sans', sans-serif; color: #1a2d40; }
+    .app { min-height: 100vh; background: linear-gradient(150deg, #d6eaf8 0%, #e8f0f5 50%, #e8f0f5 100%); padding: 0 0 60px; }
+
+    /* HEADER */
+    .header { text-align: center; padding: 38px 20px 28px; background: linear-gradient(135deg, #0d2a4a 0%, #163d6b 100%); border-bottom: 4px solid #e8b840; margin-bottom: 40px; position: relative; }
+    .header-badge { display: inline-block; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.4); color: #fff; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; padding: 6px 18px; border-radius: 20px; margin-bottom: 14px; }
+    .header h1 { font-size: clamp(24px,5vw,40px); font-weight: 700; font-family: 'Playfair Display', serif; color: #fff; letter-spacing: -0.5px; }
+    .header h1 span { color: #e8b840; }
+    .header p { margin-top: 8px; color: rgba(255,255,255,0.75); font-size: 13px; }
+
+    /* User topbar */
+    .topbar { position: absolute; top: 14px; right: 20px; }
+    @media (max-width: 480px) {
+      .header { padding: 56px 20px 22px; }
+      .topbar { top: 12px; right: 12px; }
+      .topbar .dropdown-toggle { font-size: 11px; padding: 5px 10px 5px 8px; gap: 6px; }
+      .topbar-avatar { width: 22px; height: 22px; font-size: 11px; }
+      .topbar .dropdown-menu { right: 0; left: auto; min-width: 170px; }
+    }
+
+    .topbar .dropdown-toggle {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.28);
+      color: #fff !important;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px; font-weight: 600;
+      padding: 6px 14px 6px 10px;
+      border-radius: 20px;
+      text-decoration: none;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .topbar .dropdown-toggle:hover,
+    .topbar .dropdown-toggle:focus { background: rgba(255,255,255,0.22); border-color: rgba(255,255,255,0.45); outline: none; box-shadow: none; }
+    .topbar .dropdown-toggle::after { border-top-color: rgba(255,255,255,0.75); vertical-align: middle; }
+    .topbar-avatar { width: 26px; height: 26px; border-radius: 50%; background: rgba(232,184,64,0.25); border: 1.5px solid rgba(232,184,64,0.6); display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+
+    .topbar .dropdown-menu {
+      display: block;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(6px);
+      transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+      pointer-events: none;
+      min-width: 195px;
+      border: 1px solid rgba(27,80,130,0.15);
+      border-radius: 12px;
+      box-shadow: 0 8px 28px rgba(13,42,74,0.18);
+      padding: 6px;
+      margin-top: 8px;
+      background: #fff;
+    }
+    .topbar .dropdown-menu.open { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
+    .topbar .dropdown-header { font-family: 'DM Sans', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #8aaabb; padding: 6px 10px 4px; }
+    .topbar .dropdown-item { font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; color: #1a2d40; border-radius: 8px; padding: 9px 12px; display: flex; align-items: center; gap: 9px; transition: background 0.15s; cursor: pointer; }
+    .topbar .dropdown-item:hover { background: #f0f8ff; color: #1b98e0; }
+    .topbar .dropdown-item.text-muted-item { color: #8aaabb; font-size: 11px; cursor: default; pointer-events: none; }
+    .topbar .dropdown-item.logout-item { color: #c0392b; }
+    .topbar .dropdown-item.logout-item:hover { background: #fdecea; color: #c0392b; }
+    .topbar .dropdown-divider { margin: 4px 6px; border-color: #e8f0f7; }
+
+    .btn-edit { display: none; }
+    .btn-edit.show { display: inline-block; }
+
+    /* FORM */
+    .form-wrap { max-width: 820px; margin: 0 auto; padding: 0 20px; }
+    .form-wrap.hidden { display: none; }
+    .form-section { background: #f2f8fb; border: 1px solid rgba(58,143,199,0.18); border-radius: 20px; padding: 32px; margin-bottom: 24px; box-shadow: 0 2px 16px rgba(58,143,199,0.07); }
+
+    .section-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: #3a8fc7; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; font-weight: 600; }
+    .section-label::after { content: ''; flex: 1; height: 2px; background: linear-gradient(90deg, #e8b840, rgba(232,184,64,0.1)); border-radius: 2px; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    .span-2 { grid-column: span 2; }
+    @media (max-width:600px) { .grid-2,.grid-3{grid-template-columns:1fr;} .span-2{grid-column:span 1;} }
+
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field label { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: #5a7a94; font-weight: 600; }
+    .field input, .field select { background: #e4eef5; border: 1.5px solid #c5d8e8; border-radius: 10px; padding: 12px 14px; color: #1a2d40; font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; transition: border-color .2s, background .2s, box-shadow .2s; width: 100%; }
+    .field input:focus, .field select:focus { border-color: #3a8fc7; background: #fff; box-shadow: 0 0 0 3px rgba(58,143,199,0.12); }
+    .field input.err, .field select.err { border-color: #e03030; }
+    .field .errmsg { font-size: 11px; color: #e03030; display: none; font-weight: 500; }
+    .field .errmsg.show { display: block; }
+    .field select option { background: #fff; color: #1a2d40; }
+
+    /* PHOTO UPLOAD */
+    .photo-upload { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+    .photo-zone { width: 130px; height: 160px; border: 2px dashed rgba(58,143,199,0.4); border-radius: 12px; cursor: pointer; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #d6eaf8; transition: border-color .2s, background .2s; }
+    .photo-zone:hover { border-color: #3a8fc7; background: #d6eaf8; }
+    .photo-zone img { width: 100%; height: 100%; object-fit: cover; display: none; }
+    .photo-zone .ph { display: flex; flex-direction: column; align-items: center; gap: 8px; color: #5a7a94; font-size: 12px; text-align: center; padding: 10px; }
+    .photo-zone .ph svg { opacity: 0.6; color: #3a8fc7; }
+    .photo-btn { background: #3a8fc7; border: none; color: #fff; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600; padding: 9px 18px; border-radius: 8px; cursor: pointer; letter-spacing: 1px; transition: background .2s, transform .1s; }
+    .photo-btn:hover { background: #2e7db5; transform: translateY(-1px); }
+    .photo-err { font-size: 11px; color: #e03030; display: none; font-weight: 500; }
+    .photo-err.show { display: block; }
+
+    /* ATTACHMENTS */
+    .attach-zone { border: 2px dashed rgba(58,143,199,0.4); border-radius: 14px; background: #e4eef5; padding: 32px 20px; display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer; transition: border-color .2s, background .2s; text-align: center; }
+    .attach-zone:hover, .attach-zone.dragover { border-color: #3a8fc7; background: #d6eaf8; }
+    .attach-zone .az-icon { width: 52px; height: 52px; background: rgba(58,143,199,0.1); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #3a8fc7; }
+    .attach-zone .az-title { font-size: 14px; font-weight: 700; color: #0d2a4a; }
+    .attach-zone .az-sub   { font-size: 12px; color: #5a7a94; }
+    .attach-zone .az-browse { display: inline-block; background: #3a8fc7; color: #fff; font-size: 12px; font-weight: 700; padding: 8px 20px; border-radius: 8px; letter-spacing: 0.5px; margin-top: 4px; pointer-events: none; }
+    .attach-list { margin-top: 14px; display: flex; flex-direction: column; gap: 8px; }
+    .attach-item { display: flex; align-items: center; gap: 10px; background: #f2f8fb; border: 1px solid #c5d8e8; border-radius: 10px; padding: 8px 12px; font-size: 13px; }
+    .attach-item .ai-thumb { width: 36px; height: 36px; object-fit: cover; border-radius: 6px; border: 1px solid #c5d8e8; flex-shrink: 0; }
+    .attach-item .ai-icon  { font-size: 22px; flex-shrink: 0; }
+    .attach-item .ai-name  { flex: 1; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .attach-item .ai-size  { font-size: 11px; color: #5a7a94; white-space: nowrap; }
+    .attach-item .ai-remove { background: none; border: none; cursor: pointer; color: #e03030; font-size: 16px; padding: 2px 6px; border-radius: 6px; }
+    .attach-item .ai-remove:hover { background: #fdecea; }
+    .attach-err { font-size: 11px; color: #e03030; display: none; font-weight: 500; margin-top: 8px; }
+    .attach-err.show { display: block; }
+
+    /* BANNERS */
+    .info-banner { max-width: 820px; margin: 0 auto 24px; padding: 14px 20px; background: #fff8e1; border: 1.5px solid #e8b840; border-radius: 12px; font-size: 13px; color: #8a6500; text-align: center; display: none; font-weight: 500; }
+    .info-banner.show { display: block; }
+
+    /* SUBMIT BUTTON */
+    .gen-btn { width: 100%; max-width: 820px; margin: 8px auto 0; display: block; padding: 18px; background: linear-gradient(135deg, #3a8fc7 0%, #2e7db5 100%); color: #fff; font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: 2px; text-transform: uppercase; border: none; border-radius: 14px; cursor: pointer; transition: opacity .2s, transform .1s; box-shadow: 0 4px 20px rgba(58,143,199,0.35); }
+    .gen-btn:hover { opacity: 0.92; transform: translateY(-1px); }
+
+    /* PENDING SCREEN */
+    .pending-wrap { max-width: 560px; margin: 0 auto; padding: 20px 20px 60px; display: none; text-align: center; }
+    .pending-wrap.show { display: block; }
+    .pending-icon { width: 90px; height: 90px; border-radius: 50%; background: linear-gradient(135deg, #d6eaf8, #fff8e1); border: 3px solid #e8b840; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; font-size: 38px; }
+    .pending-title { font-size: 24px; font-weight: 700; color: #3a8fc7; margin-bottom: 10px; }
+    .pending-subtitle { font-size: 14px; color: #5a7a94; margin-bottom: 28px; line-height: 1.7; }
+    .pending-ref { display: inline-block; background: #e4eef5; border: 1.5px solid #c5d8e8; border-radius: 10px; padding: 12px 28px; font-size: 13px; color: #1a2d40; margin-bottom: 28px; }
+    .pending-ref strong { color: #3a8fc7; letter-spacing: 1px; }
+    .pending-steps { background: #fff8e1; border: 1.5px solid #e8b840; border-radius: 12px; padding: 18px 22px; text-align: left; margin-bottom: 28px; }
+    .pending-steps p { font-size: 10px; font-weight: 700; color: #8a6500; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
+    .pending-steps li { font-size: 13px; color: #6a5000; margin-bottom: 6px; list-style: none; display: flex; gap: 8px; }
+    .pending-steps li::before { content: "→"; color: #e8b840; font-weight: 700; }
+    .act-btn { padding: 14px 32px; border-radius: 12px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; border: none; transition: all .2s; }
+    .act-btn.secondary { background: #fff; border: 2px solid #3a8fc7; color: #3a8fc7; }
+    .act-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+
+    /* Already-submitted notice */
+    .notice-box { max-width: 560px; margin: 0 auto 32px; padding: 20px 24px; border-radius: 16px; text-align: center; font-size: 14px; font-weight: 600; line-height: 1.6; display: none; }
+    .notice-box.show { display: block; }
+    .notice-pending  { background: #fff8e1; border: 1.5px solid #e8b840; color: #8a6500; }
+    .notice-rejected { background: #fdecea; border: 1.5px solid #f5a5a0; color: #b71c1c; }
+
+    /* SUPPORTING DOCUMENTS CARD */
+    .card { background: #f2f8fb; border: 1px solid rgba(58,143,199,0.18); border-radius: 20px; padding: 32px; margin-bottom: 24px; box-shadow: 0 2px 16px rgba(58,143,199,0.07); }
+    .card-header { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+    .card-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: #3a8fc7; font-weight: 600; white-space: nowrap; }
+    .card-header-line { flex: 1; height: 2px; background: linear-gradient(90deg, #e8b840, rgba(232,184,64,0.1)); border-radius: 2px; }
+    .doc-note { font-size: 13px; color: #5a7a94; margin-bottom: 22px; line-height: 1.65; }
+    .doc-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    @media (max-width: 450px) { .doc-grid { grid-template-columns: 1fr; } }
+    .doc-slot { display: flex; flex-direction: column; align-items: center; gap: 8px; background: #e4eef5; border: 1.5px dashed rgba(58,143,199,0.35); border-radius: 14px; padding: 18px 10px 14px; transition: border-color .2s, background .2s; }
+    .doc-slot.has-file { border-color: #3a8fc7; border-style: solid; background: #d6eaf8; }
+    .doc-slot i { font-size: 26px; color: #3a8fc7; opacity: 0.7; }
+    .doc-preview { width: 56px; height: 56px; object-fit: cover; border-radius: 8px; border: 1.5px solid #c5d8e8; display: none; }
+    .doc-filename { font-size: 10.5px; color: #5a7a94; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; padding: 0 4px; }
+    .doc-slot input[type="file"] { display: none; }
+    .btn-doc { width: 100%; background: #3a8fc7; border: none; color: #fff; font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 700; padding: 8px 6px; border-radius: 8px; cursor: pointer; letter-spacing: 0.5px; text-align: center; transition: background .2s, transform .1s; }
+    .btn-doc:hover { background: #2e7db5; transform: translateY(-1px); }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <div class="topbar">
+      <div class="dropdown">
+        <a class="dropdown-toggle" href="#" id="topbarDropdown" role="button">
+          <span class="topbar-avatar">👤</span>
+          <span id="topbarName">—</span>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="topbarDropdown">
+          <li><h6 class="dropdown-header">My Account</h6></li>
+          <li><span class="dropdown-item text-muted-item"><i class="fa-solid fa-circle-user"></i>&nbsp;<span id="dropdownUser">—</span></span></li>
+          <li><hr class="dropdown-divider"/></li>
+          <li><a class="dropdown-item logout-item" id="topbarLogout" href="#"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="header-badge">Official San Mateo Rizal ID System</div>
+    <h1>Municipality <span>ID</span> Application</h1>
+    <p>Fill out the form below and submit for admin review</p>
+  </div>
+
+  <div class="info-banner" id="infoBanner">⚠ Please complete all required fields, upload a photo, and attach at least one document.</div>
+  <div class="notice-box" id="noticeBox"></div>
+
+  <!-- FORM -->
+  <div class="form-wrap" id="formWrap">
+
+    <div class="form-section">
+      <div class="section-label">Profile Photo</div>
+      <div class="photo-upload">
+        <div class="photo-zone" id="photoZone">
+          <img id="photoPreview" src="" alt="ID Photo" />
+          <div class="ph" id="photoPlaceholder">
+            <svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+            </svg>
+            <span>Click to upload<br/>2×2 photo</span>
+          </div>
+        </div>
+        <button class="photo-btn" id="photoBtn">Upload Photo</button>
+        <span class="photo-err" id="photoErr">Photo is required</span>
+        <input type="file" id="photoInput" accept="image/*" style="display:none" onchange="handlePhoto(this)" />
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="section-label">Personal Information</div>
+      <div class="grid-3">
+        <div class="field"><label>First Name *</label><input type="text" id="firstName" placeholder="Juan" oninput="clearErr('firstName')" /><span class="errmsg" id="err-firstName">Required</span><span class="errmsg" id="err-firstName-chars">Only letters are allowed</span></div>
+        <div class="field"><label>Middle Name (Optional)</label><input type="text" id="middleName" placeholder="Santos" /><span class="errmsg" id="err-middleName-chars">Only letters are allowed</span></div>
+        <div class="field"><label>Last Name *</label><input type="text" id="lastName" placeholder="Dela Cruz" oninput="clearErr('lastName')" /><span class="errmsg" id="err-lastName">Required</span><span class="errmsg" id="err-lastName-chars">Only letters are allowed</span></div>
+        <div class="field"><label>Age *</label><input type="number" id="age" min="1" max="120" placeholder="25" oninput="clearErr('age')" /><span class="errmsg" id="err-age">Required</span></div>
+        <div class="field"><label>Date of Birth *</label><input type="date" id="birthdate" oninput="clearErr('birthdate')" /><span class="errmsg" id="err-birthdate">Required</span></div>
+        <div class="field"><label>Place of Birth *</label><input type="text" id="placeOfBirth" placeholder="Manila, Philippines" oninput="clearErr('placeOfBirth')" /><span class="errmsg" id="err-placeOfBirth">Required</span></div>
+        <div class="field"><label>Gender *</label><input type="text" id="gender" placeholder="Gender" oninput="clearErr('gender')"/><span class="errmsg" id="err-gender">Required</span><span class="errmsg" id="err-gender-chars">Only letters are allowed</span></div>
+        <div class="field"><label>Civil Status *</label><input type="text" id="civilStatus" placeholder="Civil Status" oninput="clearErr('civilStatus')"><span class="errmsg" id="err-civilStatus">Required</span><span class="errmsg" id="err-civilStatus-chars">Only letters are allowed</span></div>
+        <div class="field"><label>Nationality *</label><input type="text" id="nationality" placeholder="Filipino" oninput="clearErr('nationality')" /><span class="errmsg" id="err-nationality">Required</span><span class="errmsg" id="err-nationality-chars">Only letters are allowed</span></div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="section-label">Contact &amp; Address</div>
+      <div class="grid-2">
+        <div class="field span-2"><label>Complete Address *</label><input type="text" id="address" placeholder="123 Rizal St., Barangay 1, San Mateo, Rizal" oninput="clearErr('address')" /><span class="errmsg" id="err-address">Required</span></div>
+        <div class="field"><label>Contact Number *</label><input type="text" id="contactNumber" placeholder="09XXXXXXXXX" maxlength="11" oninput="validateContact(this)" /><span class="errmsg" id="err-contactNumber">Required</span><span class="errmsg" id="err-contactFormat">Only numbers are allowed — no letters or special characters</span><span class="errmsg" id="err-contactLimit">Contact number must be exactly 11 digits (e.g. 09XXXXXXXXX)</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-label">Supporting Documents</span>
+        <div class="card-header-line"></div>
+      </div>
+      <p class="doc-note">
+        Attach at least one valid document (Birth Certificate, Passport, Existing ID, or Driver's License).<br/>
+        Maximum <strong>5MB</strong> per file.
+      </p>
+      <div class="doc-grid">
+        <!-- Driver's License -->
+        <div class="doc-slot">
+          <i class="fa-solid fa-id-card"></i>
+          <img class="doc-preview" id="prev-dl" alt=""/>
+          <span class="doc-filename" id="fn-dl">No file chosen</span>
+          <input type="file" id="file-dl" accept="image/*,.pdf" onchange="previewDoc('dl',event)"/>
+          <button class="btn-doc" onclick="document.getElementById('file-dl').click()">Driver's License</button>
+        </div>
+        <!-- Passport -->
+        <div class="doc-slot">
+          <i class="fa-solid fa-passport"></i>
+          <img class="doc-preview" id="prev-pp" alt=""/>
+          <span class="doc-filename" id="fn-pp">No file chosen</span>
+          <input type="file" id="file-pp" accept="image/*,.pdf" onchange="previewDoc('pp',event)"/>
+          <button class="btn-doc" onclick="document.getElementById('file-pp').click()">Passport ID</button>
+        </div>
+        <!-- Existing ID -->
+        <div class="doc-slot">
+          <i class="fa-solid fa-address-card"></i>
+          <img class="doc-preview" id="prev-eid" alt=""/>
+          <span class="doc-filename" id="fn-eid">No file chosen</span>
+          <input type="file" id="file-eid" accept="image/*,.pdf" onchange="previewDoc('eid',event)"/>
+          <button class="btn-doc" onclick="document.getElementById('file-eid').click()">Existing ID</button>
+        </div>
+        <!-- Birth Certificate -->
+        <div class="doc-slot">
+          <i class="fa-solid fa-file"></i>
+          <img class="doc-preview" id="prev-bc" alt=""/>
+          <span class="doc-filename" id="fn-bc">No file chosen</span>
+          <input type="file" id="file-bc" accept="image/*,.pdf" onchange="previewDoc('bc',event)"/>
+          <button class="btn-doc" onclick="document.getElementById('file-bc').click()">Birth Certificate</button>
+        </div>
+      </div>
+      <span class="attach-err" id="attachErr" style="margin-top:14px;display:none;">Please attach at least one supporting document.</span>
+    </div>
+
+      <button class="gen-btn" id="submitBtn">✉ Submit Application</button>
+
+    
+  </div>
+
+  <!-- PENDING SCREEN -->
+  <div class="pending-wrap" id="pendingWrap">
+    <div class="pending-icon"><i class="fa-regular fa-hourglass"></i></div>
+    <div class="pending-title">Application Submitted!</div>
+    <div class="pending-subtitle">Your application is now under admin review.<br>You'll be able to view your ID card once approved.</div>
+    <div class="pending-ref">Reference No.: <strong id="pendingRef">—</strong></div>
+    <div class="pending-steps">
+      <p>What happens next</p>
+      <ul>
+        <li>Admin reviews your information and attached documents</li>
+        <li>Your ID card is generated only upon approval</li>
+        <li>Log back in to check your status anytime</li>
+      </ul>
+    </div>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+      <button class="act-btn" id="editBtnPending" onclick="doEdit()" style="background:linear-gradient(135deg,#e8b840,#c9980a);color:#fff;border:none;display:none;">✏ Edit Application</button>
+      <button class="act-btn" id="logoutBtnPending" onclick="doLogout()" style="background:linear-gradient(135deg,#3a8fc7,#2e7db5);color:#fff;border:none;display:none;">⏻ Logout</button>
+    </div>
+  </div>
+</div>
+
+<script>
+ $(function () {
+
+    /* ── Helpers ── */
+    const LS = {
+      get: k => { try { return JSON.parse(localStorage.getItem(k)); } catch(e) { return null; } },
+      set: (k, v) => localStorage.setItem(k, JSON.stringify(v))
+    };
+    const session = LS.get('id_session');
+    if (!session || session.type !== 'user') { location.href = 'login.html'; return; }
+
+    const REQUIRED   = ['firstName','lastName','age','birthdate','placeOfBirth','gender','civilStatus','nationality','address','contactNumber'];
+    const DOC_SLOTS  = ['dl','pp','eid','bc'];
+    const docFiles   = {};
+    let photoURL = null, photoB64 = null;
+
+    const genID    = () => `PH-${new Date().getFullYear()}-${Math.floor(10000000 + Math.random() * 90000000)}`;
+    const fieldVal = id => $('#' + id).val().trim();
+    const fileToB64 = file => new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload  = () => res(r.result);
+      r.onerror = () => rej();
+      r.readAsDataURL(file);
+    });
+
+    /* ── Populate topbar name ── */
+    $('#topbarName').text(session.name);
+    $('#dropdownUser').text('@' + (session.username || session.name));
+
+    /* ── Check existing submission ── */
+    const subs0    = LS.get('id_submissions') || [];
+    const existing = subs0.find(s => s.username === session.username);
+
+    if (!existing) {
+      $('#topbarLogout').show();
+    } else if (existing.status === 'approved') {
+      location.href = 'id-card.html';
+    } else if (existing.status === 'pending') {
+      $('#formWrap').addClass('hidden');
+      $('#pendingRef').text(existing.id);
+      $('#pendingWrap').addClass('show');
+      $('#editBtnPending, #logoutBtnPending').show();
+      $('#topbarLogout').hide();
+    } else if (existing.status === 'rejected') {
+      $('#topbarLogout').show();
+      $('#noticeBox')
+        .addClass('show notice-rejected')
+        .html('❌ Your previous application was rejected.<br><strong>Reason:</strong> ' +
+          (existing.rejectedReason || '—') +
+          '<br><span style="font-size:12px;font-weight:400;">You may fill out a new application below.</span>');
+    }
+
+    /* ── Check if user has any progress ── */
+    const hasProgress = () => {
+      const filledField = REQUIRED.some(id => $('#' + id).val().trim() !== '');
+      const hasPhoto = !!photoURL;
+      const hasDoc = DOC_SLOTS.some(s => docFiles[s]);
+      return filledField || hasPhoto || hasDoc;
+    };
+
+    /* ── Logout ── */
+    $('#topbarLogout').on('click', () => {
+      if (hasProgress()) {
+        const swalWithBootstrapButtons = Swal.mixin({
+          customClass: { confirmButton: 'btn btn-success', cancelButton: 'btn btn-danger' },
+          buttonsStyling: false
+        });
+        swalWithBootstrapButtons.fire({
+          title: 'Are you sure?',
+          text: "Your application won't be saved!",
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Logout',
+          cancelButtonText: 'Cancel',
+          reverseButtons: true
+        }).then((result) => {
+          if (result.isConfirmed) {
+            swalWithBootstrapButtons.fire({
+              text: 'Your application is not saved.',
+              icon: 'error'
+            }).then(() => {
+              localStorage.removeItem('id_session');
+              location.href = 'login.html';
+            });
+          } else if (result.dismiss === Swal.DismissReason.cancel) {
+            swalWithBootstrapButtons.fire({
+              title: 'Cancelled',
+              text: 'You can now resume your application',
+              icon: 'success'
+            });
+          }
+        });
+      } else {
+        localStorage.removeItem('id_session');
+        location.href = 'login.html';
+      }
+    });
+
+    $('#logoutBtnPending').on('click', () => {
+      localStorage.removeItem('id_session');
+      location.href = 'login.html';
+    });
+
+    /* ── Clear field error on input ── */
+    REQUIRED.forEach(id => {
+      $('#' + id).on('input', () => {
+        $('#' + id).removeClass('err');
+        $('#err-' + id).removeClass('show');
+        $('#infoBanner').removeClass('show');
+      });
+    });
+
+    /* ── Contact number — digits only, max 11 ── */
+    $('#contactNumber').on('input', function () {
+      const raw = $(this).val();
+      const clean = raw.replace(/[^0-9]/g, '').slice(0, 11);
+      $(this).val(clean);
+
+      // Show letters/special-chars error if anything was stripped
+      if (raw !== clean && raw.replace(/[^0-9]/g, '') !== raw) {
+        $('#err-contactFormat').addClass('show');
+        $(this).addClass('err');
+      } else {
+        $('#err-contactFormat').removeClass('show');
+      }
+
+      // Show 11-digit limit error while number is incomplete
+      if (clean.length > 0 && clean.length < 11) {
+        $('#err-contactLimit').addClass('show');
+        $(this).addClass('err');
+      } else {
+        $('#err-contactLimit').removeClass('show');
+        if (clean.length === 11) $(this).removeClass('err');
+      }
+
+      $('#err-contactNumber').removeClass('show');
+      $('#infoBanner').removeClass('show');
+    });
+
+    /* ── Age / Birthdate mismatch check ── */
+    let ageMismatchAlertShown = false;
+
+    const calcAgeFromBirthdate = (dateStr) => {
+      if (!dateStr) return null;
+      const today = new Date();
+      const dob = new Date(dateStr);
+      if (isNaN(dob)) return null;
+      let age = today.getFullYear() - dob.getFullYear();
+      const m = today.getMonth() - dob.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+      return age;
+    };
+
+    const checkAgeBirthdateMismatch = () => {
+      const ageVal = parseInt($('#age').val(), 10);
+      const birthdateVal = $('#birthdate').val();
+      if (!birthdateVal || isNaN(ageVal)) return;
+
+      const expectedAge = calcAgeFromBirthdate(birthdateVal);
+      if (expectedAge === null) return;
+
+      if (ageVal !== expectedAge) {
+        ageMismatchAlertShown = true;
+        $('#age').addClass('err');
+        $('#birthdate').addClass('err');
+        Swal.fire({
+          title: 'Age & Birthdate Mismatch',
+          html: `The age you entered (<strong>${ageVal}</strong>) does not match the birthdate provided.<br><br>
+                 Based on your date of birth, your age should be <strong>${expectedAge}</strong>.`,
+          icon: 'error',
+          confirmButtonText: 'Fix It',
+          confirmButtonColor: '#3a8fc7',
+          allowOutsideClick: false
+        }).then(() => {
+          ageMismatchAlertShown = false;
+        });
+      } else {
+        $('#age').removeClass('err');
+        $('#birthdate').removeClass('err');
+        $('#err-age').removeClass('show');
+        $('#err-birthdate').removeClass('show');
+      }
+    };
+
+    let ageMismatchTimer = null;
+    const debouncedMismatchCheck = () => {
+      clearTimeout(ageMismatchTimer);
+      ageMismatchTimer = setTimeout(checkAgeBirthdateMismatch, 800);
+    };
+
+    $('#age').on('input', debouncedMismatchCheck);
+    $('#birthdate').on('input change', debouncedMismatchCheck);
+
+    /* ── Letters-only fields ── */
+    const LETTERS_ONLY_FIELDS = ['firstName', 'middleName', 'lastName', 'gender', 'civilStatus', 'nationality'];
+    LETTERS_ONLY_FIELDS.forEach(id => {
+      $('#' + id).on('input', function () {
+        const raw = $(this).val();
+        const clean = raw.replace(/[^a-zA-ZÀ-ÿ\s\-'\.]/g, '');
+        $(this).val(clean);
+        const errId = '#err-' + id + '-chars';
+        if (raw !== clean) {
+          $(errId).addClass('show');
+          $(this).addClass('err');
+        } else {
+          $(errId).removeClass('show');
+          if (!$(this).hasClass('err') || clean.trim()) {
+            $(this).removeClass('err');
+          }
+        }
+      });
+    });
+
+    /* ── Photo upload ── */
+    $('#photoZone, #photoBtn').on('click', function (e) {
+      e.stopPropagation();
+      $('#photoInput').trigger('click');
+    });
+
+    $('#photoInput').on('change', async function () {
+      const file = this.files[0];
+      if (!file) return;
+      photoURL = URL.createObjectURL(file);
+      photoB64 = await fileToB64(file);
+      $('#photoPreview').attr('src', photoURL).show();
+      $('#photoPlaceholder').hide();
+      $('#photoBtn').text('Change Photo');
+      $('#photoErr').removeClass('show');
+    });
+
+    /* ── Doc-slot buttons trigger their hidden file input ── */
+    $('.btn-doc').on('click', function () {
+      $('#' + $(this).data('target')).trigger('click');
+    });
+
+    /* ── Doc-slot file change ── */
+    DOC_SLOTS.forEach(slot => {
+      $('#file-' + slot).on('change', async function () {
+        const file = this.files[0];
+        if (!file) return;
+        if (file.size > 5 * 1024 * 1024) {
+          alert('File exceeds 5 MB limit.');
+          $(this).val('');
+          return;
+        }
+        const b64 = await fileToB64(file);
+        docFiles[slot] = { name: file.name, size: file.size, type: file.type, dataURL: b64 };
+        const $prev = $('#prev-' + slot);
+        if (file.type.startsWith('image/')) {
+          $prev.attr('src', b64).show();
+        } else {
+          $prev.hide();
+        }
+        $('#fn-' + slot).text(file.name);
+        $(this).closest('.doc-slot').addClass('has-file');
+        $('#attachErr').removeClass('show');
+      });
+    });
+
+    /* ── Validate ── */
+    const validate = () => {
+      let ok = true;
+      REQUIRED.forEach(id => {
+        if (!$('#' + id).val().trim()) {
+          $('#' + id).addClass('err');
+          $('#err-' + id).addClass('show');
+          ok = false;
+        }
+      });
+      if (!photoURL) { $('#photoErr').addClass('show'); ok = false; }
+      if (!DOC_SLOTS.some(s => docFiles[s])) { $('#attachErr').addClass('show'); ok = false; }
+
+      /* ── Age / Birthdate mismatch ── */
+      const ageVal = parseInt($('#age').val(), 10);
+      const birthdateVal = $('#birthdate').val();
+      if (birthdateVal && !isNaN(ageVal)) {
+        const expectedAge = calcAgeFromBirthdate(birthdateVal);
+        if (expectedAge !== null && ageVal !== expectedAge) {
+          $('#age').addClass('err');
+          $('#birthdate').addClass('err');
+          Swal.fire({
+            title: 'Age & Birthdate Mismatch',
+            html: `The age you entered (<strong>${ageVal}</strong>) does not match the birthdate provided.<br><br>
+                   Based on your date of birth, your age should be <strong>${expectedAge}</strong>.`,
+            icon: 'error',
+            confirmButtonText: 'Fix It',
+            confirmButtonColor: '#3a8fc7',
+            allowOutsideClick: false
+          });
+          return false;
+        }
+      }
+
+      if (!ok) {
+        $('#infoBanner').addClass('show');
+        Swal.fire({
+          title: 'Required Fields Missing',
+          text: 'Please complete all required fields before submitting.',
+          icon: 'warning',
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#3a8fc7'
+        });
+      }
+      return ok;
+    };
+
+    /* ── Submit ── */
+    $('#submitBtn').on('click', async () => {
+      if (!validate()) return;
+      const firstName  = fieldVal('firstName');
+      const middleName = fieldVal('middleName');
+      const lastName   = fieldVal('lastName');
+      const fullName   = `${firstName}${middleName ? ' ' + middleName : ''} ${lastName}`;
+      const refNumber  = genID();
+      const sub = {
+        id: refNumber,
+        username: session.username,
+        status: 'pending',
+        submittedAt: new Date().toLocaleString('en-PH'),
+        approvedAt: null,
+        rejectedReason: null,
+        data: {
+          firstName, middleName, lastName, fullName,
+          age: fieldVal('age'), birthdate: fieldVal('birthdate'),
+          placeOfBirth: fieldVal('placeOfBirth'), gender: fieldVal('gender'),
+          civilStatus: fieldVal('civilStatus'), nationality: fieldVal('nationality'),
+          address: fieldVal('address'), contactNumber: fieldVal('contactNumber')
+        },
+        photo: photoB64,
+        attachments: DOC_SLOTS.filter(s => docFiles[s]).map(s => ({
+          name: docFiles[s].name, type: docFiles[s].type, dataURL: docFiles[s].dataURL
+        }))
+      };
+      const allSubs = (LS.get('id_submissions') || []).filter(s => s.username !== session.username);
+      allSubs.unshift(sub);
+      LS.set('id_submissions', allSubs);
+      $('#pendingRef').text(refNumber);
+      $('#formWrap').addClass('hidden');
+      $('#pendingWrap').addClass('show');
+      $('#editBtnPending, #logoutBtnPending').show();
+      $('#topbarLogout').hide();
+      $('html, body').animate({ scrollTop: 0 }, 400);
+    });
+
+    /* ── Edit (reopen form) ── */
+    $('#editBtnPending').on('click', () => {
+      const remaining = (LS.get('id_submissions') || []).filter(s => s.username !== session.username);
+      LS.set('id_submissions', remaining);
+
+      $('#pendingWrap').removeClass('show');
+      $('#formWrap').removeClass('hidden');
+      $('#editBtnPending, #logoutBtnPending').hide();
+      $('#topbarLogout').show();
+      $('#noticeBox').removeClass('show');
+
+      // Reset fields
+      ['firstName','middleName','lastName','age','birthdate','placeOfBirth','gender','civilStatus','nationality','address','contactNumber']
+        .forEach(id => $('#' + id).val(''));
+
+      // Reset photo
+      photoURL = null; photoB64 = null;
+      $('#photoPreview').hide().attr('src', '');
+      $('#photoPlaceholder').show();
+      $('#photoBtn').text('Upload Photo');
+      $('#photoInput').val('');
+
+      // Reset doc slots
+      DOC_SLOTS.forEach(slot => {
+        delete docFiles[slot];
+        $('#prev-' + slot).hide().attr('src', '');
+        $('#fn-' + slot).text('No file chosen');
+        $('#file-' + slot).val('');
+        $('#file-' + slot).closest('.doc-slot').removeClass('has-file');
+      });
+
+      $('#infoBanner').removeClass('show');
+      $('html, body').animate({ scrollTop: 0 }, 400);
+    });
+
+
+    /* ── Topbar dropdown (pure jQuery, no Bootstrap JS needed) ── */
+    $('#topbarDropdown').on('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      $(this).siblings('.dropdown-menu').toggleClass('open');
+    });
+    $(document).on('click', function() {
+      $('.topbar .dropdown-menu').removeClass('open');
+    });
+    $('.topbar .dropdown-menu').on('click', function(e) {
+      e.stopPropagation();
+    });
+
+  });
+</script>
+
+  
+</body>
+</html>
